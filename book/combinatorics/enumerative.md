@@ -12,4 +12,4 @@ kernelspec:
   name:         dyalog_apl
 ---
 
-# Enumerative Combinatorics
+# Enumerative Combinatorics and The Twelvefold Way
