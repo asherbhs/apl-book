@@ -1,3 +1,5 @@
+⍝ NOTE: this file will hit VALUE ERROR immediately, it's not meant to be run, it's meant to be a reference
+
 n*k    ⍝ number of ways to place k labelled balls in n labelled boxes, comparison to binary numbers as subset masks
 !n     ⍝ number of ways to place k←n labelled balls in n labelled boxes, with at most 1 per box (number of permutations)
 k!n    ⍝ number of ways to place k unlabelled balls in n labelled boxes, with at most 1 per box (binomial coefficient)
@@ -15,7 +17,7 @@ k!n ←→ (k!n-1)+(k-1)!n-1    ⍝ bijective proof, hockeystick identity
 (!n)-+/((¯1*¯1+⊢)×!∘n×(!n-⊢))⍳n ←→ +/(¯1∘* × !∘n × (!n-⊢))0,⍳n ←→ (!n)×+/(¯1∘*÷!)0,⍳n    ⍝ number of derangements of a size n set
 k Surj n ←→ +/(!∘n×¯1∘*×k*⍨n-⊢)0,⍳n    ⍝ number of surjections [k]->[n], labelled balls, labelled boxes, at least 1 ball in each box
 k S n ←→ (!n)÷⍨k Surj n                ⍝ stirling numbers of the second kind, labelled balls, unlabelled boxes, at least 1 ball in each box
-Surj←{k n←⍺ ⍵ ⋄ +/(!∘n×¯1∘*×k*⍨n-⊢)0,⍳n}
+Surj←{k n←⍺ ⍵ ⋄ +/(!∘n × ¯1∘* × k*⍨n-⊢)0,⍳n}
 S←{k n←⍺ ⍵ ⋄ (k Surj n)÷!n}
 B←{k←⍵ ⋄ +/k S¨0,⍳k} ⍝ B k ←→ number of ways to partition [k] into any number of parts (can't be more than k clearly), Bell numbers
 k!k+n-1   ←→ (n-1)!k+n-1    ⍝ k unlabelled balls into n labelled boxes, unrestricted numbers (how many ways to put stars in a stars and bars sequence)
@@ -23,16 +25,22 @@ k!k+n-1   ←→ (n-1)!k+n-1    ⍝ k unlabelled balls into n labelled boxes, un
 ⍝ generate integer partitions by recurrence
 ⍴∘1⍤0      ⍝ young diagram of a partition
 +⌿⍴∘1⍤0    ⍝ conjugate partition
-{t-⍨(⌽+\⌽t)+⊖+⍀⊖t←⍴∘1⍤0⊢⍵} ⍝ conjugate partition to distinct odd partition
+{t-⍨(⌽+\⌽t)+⊖+⍀⊖t←⍴∘1⍤0⊢⍵} ⍝ hook numbers
 C n ←→ (n!2×n)-(n-1)!2×n ←→ (n+1)÷⍨n!2×n ⍝ catalan numbers
 
 ⍝ THE TWELVEFOLD WAY - reference sudley place
+
+⍝ permutations (aplcart)
+P←{n←⍵
+    0=n: 1 0⍴0
+    ,[⍳2](⍒⍤1∘.=⍨⍳n)[;1,1+∇n-1]
+}
 
 ⍝ k unlabelled balls, n unlabelled boxes, at most 1 ball per box 
 k≤n             ⍝ number of ways
 n(k≤n)⍴n↑k⍴1    ⍝ all ways
 
-⍝ k unlabelled balls, n unlabelled boxes, any number of balls per box - partitions of k
+⍝ k unlabelled balls, n unlabelled boxes, any number of balls per box - integer partitions of k
 ∇ r←C112 k    ⍝ all ways
   r←,⊂a←,k
   :While ∨/a≠1
@@ -43,7 +51,7 @@ n(k≤n)⍴n↑k⍴1    ⍝ all ways
   :EndWhile
 ∇
 
-⍝ k unlabelled balls, n unlabelled boxes, at least 1 ball per box - partitions of k into exactly n parts
+⍝ k unlabelled balls, n unlabelled boxes, at least 1 ball per box - integer partitions of k into exactly n parts
 ⍝ result is a matrix with rows of length n
 ∇ r←k C113n n
   r←1 n⍴a←1+n↑k-n
@@ -89,12 +97,34 @@ C123n←{k n←⍺ ⍵
 k≤n             ⍝ number of ways
 n(k≤n)⍴n↑k⍴1    ⍝ all ways
 
-⍝ k labelled balls, n unlabelled boxes, any number of balls per box - all partitions of [k]
+⍝ k labelled balls, n unlabelled boxes, any number of balls per box - ≤n partitions of [k]
+B k ←→ +/k S¨0,⍳k    ⍝ number of ways
+C212k←{k n←⍺ ⍵       ⍝ labels of partitions
+    ((⊃⍪/){⊂⍵∘,⍤0⍳n⌊1+⌈/⍵}⍤1)⍣k⊢1 1⍴1
+}
+C212n←(⊂⊂⍤⊢⌸)⍤1 C212k   ⍝ for actual partitions
 
 ⍝ k labelled balls, n unlabelled boxes, at least 1 ball per box - [k] into exactly n partitions
+k S n             ⍝ number of ways
+C213k←{k n←⍺ ⍵    ⍝ labels of partitions
+    (⊢⊢⍤⌿⍨n=⌈/)k C212 n
+}
+C213n←⊂⍤⊢⌸⍤1 C213k   ⍝ for actual partitions
 
 ⍝ k labelled balls, n labelled boxes, at most 1 ball per box - partial permutations
+(!k)×k!n          ⍝ number of ways
+C221k←{k n←⍺ ⍵    ⍝ all ways
+    ,[⍳2](k C121k n)[;P k]
+}
 
 ⍝ k labelled balls, n labelled boxes, any number of balls per box - k tuples of n
+n*k               ⍝ number of ways
+C222k←{k n←⍺ ⍵    ⍝ all ways
+    ↑(,∘.,)⍣(k-1)⍨⍳n
+}
 
 ⍝ k labelled balls, n labelled boxes, at least 1 ball per box
+(!n)×k S n
+C223n←{k n←⍺ ⍵
+    ,[⍳2](k C213n n)[;P n]
+}

@@ -12,6 +12,4 @@ kernelspec:
   name:         dyalog_apl
 ---
 
-# Combinatorics
-
-
+# Implementing the Twelvefold Way
