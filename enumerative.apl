@@ -10,7 +10,7 @@ k!n ←→ (k!n-1)+(k-1)!n-1    ⍝ bijective proof, hockeystick identity
 (a+b)*n ←→ +/(!∘n × a∘* × b*n-⊢)0,⍳n    ⍝ binomial theorem
 (!n)÷×/!ks   ⍝ multinomial coefficient with +/ks ←→ n
 ⍝ multinomial theorem?
-≢a∪b ←→ +/≢¨a b (a∩b)                                  ⍝ binary inclusion exclusion
+≢a∪b ←→ +/≢¨a b (a∩b)                                    ⍝ binary inclusion exclusion
 ≢⊃∪/as ←→ +/(≢⍤(⊃∩/) × ¯1*¯1+≢)¨ ⊂⍤/∘as⍤1⍉2⊥⍣¯1⍳¯1+2*≢as ⍝ general inclusion exclusion principle
 (!n)-+/((¯1*¯1+⊢)×!∘n×(!n-⊢))⍳n ←→ +/(¯1∘* × !∘n × (!n-⊢))0,⍳n ←→ (!n)×+/(¯1∘*÷!)0,⍳n    ⍝ number of derangements of a size n set
 k Surj n ←→ +/(!∘n×¯1∘*×k*⍨n-⊢)0,⍳n    ⍝ number of surjections [k]->[n], labelled balls, labelled boxes, at least 1 ball in each box
@@ -38,13 +38,14 @@ n(k≤n)⍴n↑k⍴1    ⍝ all ways
   :While ∨/a≠1
      h t←(¯1++/1≠a)(↑,⍥⊂↓)a         ⍝ suffix (x+1),1,..,1
      x←¯1+⊃t
-     s←+/t                          ⍝ sum of suffix
+     s←+/t
      r,←⊂a←h,(x⍴⍨⌊s÷x),(0∘≠⍴⊢)x|s   ⍝ h,x,..,x,r where s=x+..+x+r
   :EndWhile
 ∇
 
 ⍝ k unlabelled balls, n unlabelled boxes, at least 1 ball per box - partitions of k into exactly n parts
-∇ r←k C113 n
+⍝ result is a matrix with rows of length n
+∇ r←k C113n n
   r←1 n⍴a←1+n↑k-n
   :While n≥j←1⍳⍨a<a[1]-1
      h t←j(↑,⍥⊂↓)a
@@ -54,9 +55,46 @@ n(k≤n)⍴n↑k⍴1    ⍝ all ways
 ∇
 
 ⍝ k unlabelled balls, n labelled boxes, at most 1 ball per box - combinations
-k!n           ⍝ number of ways
-P←{k n←⍺ ⍵    ⍝ all ways
+k!n               ⍝ number of ways
+C121k←{k n←⍺ ⍵    ⍝ result rows have length k
     k=1: ⍪⍳n
     k>n: 0 k⍴⍬ 
     (k∇n-1)⍪n,⍨(k-1)∇n-1
 }
+C121n←{k n←⍺ ⍵    ⍝ result rows have length n
+    k=1: ⌽∘.=⍨⍳n
+    k>n: 0 n⍴⍬
+    (0,k∇n-1)⍪1,(k-1)∇n-1
+}
+
+⍝ k unlabelled balls, n labelled boxes, any number of balls per box - stars and bars
+k!k+n-1           ⍝ number of ways
+C122k←{k n←⍺ ⍵    ⍝ result rows of length k
+    (k C121k k+n-1)-⍤1⊢¯1+⍳k
+}
+C122n←{k n←⍺ ⍵    ⍝ result rows of length n
+    (⍳n)(+/∘.=)⍤1⊢k C122k n    ⍝ sloooow but whatever
+}
+
+⍝ k unlabelled balls, n labelled boxes, at least 1 ball per box - compositions
+(n-1)!k-1 ⍝ number of ways
+C123k←{k n←⍺ ⍵
+    2-⍨/(0,⊢,k⍨)(n-1)C121k k-1    ⍝ differences between indices of box walls ←→ size of boxes-1
+}
+C123n←{k n←⍺ ⍵
+    1+(k-n) C122n n
+}
+
+⍝ k labelled balls, n unlabelled boxes, at most 1 ball per box - same as if balls were unlabelled (see above)
+k≤n             ⍝ number of ways
+n(k≤n)⍴n↑k⍴1    ⍝ all ways
+
+⍝ k labelled balls, n unlabelled boxes, any number of balls per box - all partitions of [k]
+
+⍝ k labelled balls, n unlabelled boxes, at least 1 ball per box - [k] into exactly n partitions
+
+⍝ k labelled balls, n labelled boxes, at most 1 ball per box - partial permutations
+
+⍝ k labelled balls, n labelled boxes, any number of balls per box - k tuples of n
+
+⍝ k labelled balls, n labelled boxes, at least 1 ball per box
