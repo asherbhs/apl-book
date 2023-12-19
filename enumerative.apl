@@ -1,7 +1,7 @@
 ⍝ NOTE: this file will hit VALUE ERROR immediately, it's not meant to be run, it's meant to be a reference
 
-n*k    ⍝ number of ways to place k labelled balls in n labelled boxes, comparison to binary numbers as subset masks
-!n     ⍝ number of ways to place k←n labelled balls in n labelled boxes, with at most 1 per box (number of permutations)
+n*k    ⍝ number of ways to place k labelled balls in n labelled boxes
+!n     ⍝ number of ways to place k←n labelled balls in n labelled boxes, 1 per box (number of permutations)
 k!n    ⍝ number of ways to place k unlabelled balls in n labelled boxes, with at most 1 per box (binomial coefficient)
 k!n ←→ (!n)÷(!k)×!n-k
 k!n ←→ (n-k)!n
@@ -41,7 +41,8 @@ k≤n             ⍝ number of ways
 n(k≤n)⍴n↑k⍴1    ⍝ all ways
 
 ⍝ k unlabelled balls, n unlabelled boxes, any number of balls per box - integer partitions of k
-∇ r←C112 k    ⍝ all ways
+⍝ knuth method (doesn't limit number)
+∇ r←C112n k    ⍝ all ways
   r←,⊂a←,k
   :While ∨/a≠1
      h t←(¯1++/1≠a)(↑,⍥⊂↓)a         ⍝ suffix (x+1),1,..,1
@@ -50,6 +51,16 @@ n(k≤n)⍴n↑k⍴1    ⍝ all ways
      r,←⊂a←h,(x⍴⍨⌊s÷x),(0∘≠⍴⊢)x|s   ⍝ h,x,..,x,r where s=x+..+x+r
   :EndWhile
 ∇
+
+C112nk←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    _p←{k i n←⍺ ⍺⍺ ⍵                   ⍝ partitions of k into at most n parts no larger than i
+        k=0:   ,⊂⍬                     ⍝ if k=0, there is exactly one partition: ⍬
+        n=0: 0⍴,⊂⍬                     ⍝ if n=0, and k≠0, there are no boxes left
+        ⊃,/{⍵,¨(k-⍵)(⍵ _p)n-1}¨⍳k⌊i    ⍝ choose candidates counts for first box, and call recursively for the rest
+    }
+    k(k _p)n
+}
 
 ⍝ k unlabelled balls, n unlabelled boxes, at least 1 ball per box - integer partitions of k into exactly n parts
 ⍝ result is a matrix with rows of length n
@@ -62,35 +73,55 @@ n(k≤n)⍴n↑k⍴1    ⍝ all ways
   :EndWhile
 ∇
 
-⍝ k unlabelled balls, n labelled boxes, at most 1 ball per box - combinations
-k!n               ⍝ number of ways
-C121k←{k n←⍺ ⍵    ⍝ result rows have length k
-    k=1: ⍪⍳n
-    k>n: 0 k⍴⍬ 
-    (k∇n-1)⍪n,⍨(k-1)∇n-1
-}
-C121n←{k n←⍺ ⍵    ⍝ result rows have length n
-    k=1: ⌽∘.=⍨⍳n
-    k>n: 0 n⍴⍬
-    (0,k∇n-1)⍪1,(k-1)∇n-1
+C113nk←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    _p←{k i n←⍺ ⍺⍺ ⍵                     ⍝ partitions of k into exactly n parts no larger than i
+        k<n:       0 n⍴0                 ⍝ if k<n, there are too many boxes
+        k n∧.=0 0: 1 n⍴0                 ⍝ if k and n are both 0, there is exactly one partition: the empty partition
+        n=0:       0 n⍴0                 ⍝ if n=0, there are not enough boxes (k≥n and if n=0 and k=0 we don't get here, so if n=0 then k≥1)
+        ⊃⍪/{⍵,⍤1⊢(k-⍵)(⍵ _p)n-1}¨⍳k⌊i    ⍝ choose candidate counts for first box, and call recursively for the rest
+    }
+    k(k _p)n
 }
 
-⍝ k unlabelled balls, n labelled boxes, any number of balls per box - stars and bars
-k!k+n-1           ⍝ number of ways
-C122k←{k n←⍺ ⍵    ⍝ result rows of length k
-    (k C121k k+n-1)-⍤1⊢¯1+⍳k
+⍝ k unlabelled balls, n labelled boxes, at most 1 ball per box - combinations
+k!n    ⍝ number of ways
+C121kn←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    k>n: 0 k⍴0              ⍝ if k>n, there are too many balls
+    k=0: 1 0⍴0              ⍝ if k=0, there is one combination, which is choosing none. k≤n, so this case also catches all n=0
+    (k∇n-1)⍪n,⍨(k-1)∇n-1    ⍝ pick the last box, or don't, and call recursively
 }
-C122n←{k n←⍺ ⍵    ⍝ result rows of length n
-    (⍳n)(+/∘.=)⍤1⊢k C122k n    ⍝ sloooow but whatever
+
+C121nk←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    k>n: 0 n⍴0
+    k=0: 1 n⍴0
+    (0,k∇n-1)⍪1,(k-1)∇n-1    ⍝ pick the last box, or don't, and call recursively
+}
+
+⍝ k unlabelled balls, n labelled boxes, any number of balls per box - stars and bars/compositions
+k!k+n-1    ⍝ number of ways
+C122kn←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    (k C121kn k+n-1)-⍤1⊢¯1+⍳k
+}
+
+C122nk←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    ¯1+2-⍨/(0,⊢,k+n⍨)(n-1)C121kn k+n-1
 }
 
 ⍝ k unlabelled balls, n labelled boxes, at least 1 ball per box - compositions
 (n-1)!k-1 ⍝ number of ways
-C123k←{k n←⍺ ⍵
-    2-⍨/(0,⊢,k⍨)(n-1)C121k k-1    ⍝ differences between indices of box walls ←→ size of boxes-1
+C123kn←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    (k C123nk n)/⍤1⍳n    ⍝ lazy but whatever
 }
-C123n←{k n←⍺ ⍵
-    1+(k-n) C122n n
+
+C123nk←{k n←⍺ ⍵    ⍝ ←→ 1+k C112nk n
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    2-⍨/(0,⊢,k⍨)(n-1)C121kn k-1    ⍝ differences between indices of box walls ←→ size of boxes-1
 }
 
 ⍝ k labelled balls, n unlabelled boxes, at most 1 ball per box - same as if balls were unlabelled (see above)
@@ -98,33 +129,39 @@ k≤n             ⍝ number of ways
 n(k≤n)⍴n↑k⍴1    ⍝ all ways
 
 ⍝ k labelled balls, n unlabelled boxes, any number of balls per box - ≤n partitions of [k]
-B k ←→ +/k S¨0,⍳k    ⍝ number of ways
-C212k←{k n←⍺ ⍵       ⍝ labels of partitions
-    ((⊃⍪/){⊂⍵∘,⍤0⍳n⌊1+⌈/⍵}⍤1)⍣k⊢1 1⍴1
+B k ←→ +/k S¨0,⍳k    ⍝ number of ways - ish
+C212kn←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    ((⊃⍪/){⊂⍵∘,⍤0⍳n⌊1+⌈/⍵}⍤1)⍣(k-1)⊢1 1⍴1
 }
-C212n←(⊂⊂⍤⊢⌸)⍤1 C212k   ⍝ for actual partitions
+
+C212nk←(⊂⊂⍤⊢⌸)⍤1 C212kn
 
 ⍝ k labelled balls, n unlabelled boxes, at least 1 ball per box - [k] into exactly n partitions
-k S n             ⍝ number of ways
-C213k←{k n←⍺ ⍵    ⍝ labels of partitions
-    (⊢⊢⍤⌿⍨n=⌈/)k C212 n
+k S n              ⍝ number of ways
+C213kn←{k n←⍺ ⍵    ⍝ labels of partitions
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    p⌿⍨n=⌈/p←k C212 n
 }
-C213n←⊂⍤⊢⌸⍤1 C213k   ⍝ for actual partitions
+⊂⍤⊢⌸⍤1 C213nk
 
 ⍝ k labelled balls, n labelled boxes, at most 1 ball per box - partial permutations
 (!k)×k!n          ⍝ number of ways
-C221k←{k n←⍺ ⍵    ⍝ all ways
-    ,[⍳2](k C121k n)[;P k]
+C221kn←{k n←⍺ ⍵    ⍝ all ways
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    ,[⍳2](k C121kn n)[;P k]
 }
 
 ⍝ k labelled balls, n labelled boxes, any number of balls per box - k tuples of n
 n*k               ⍝ number of ways
-C222k←{k n←⍺ ⍵    ⍝ all ways
+C222kn←{k n←⍺ ⍵   ⍝ all ways
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
     ↑(,∘.,)⍣(k-1)⍨⍳n
 }
 
 ⍝ k labelled balls, n labelled boxes, at least 1 ball per box
 (!n)×k S n
-C223n←{k n←⍺ ⍵
-    ,[⍳2](k C213n n)[;P n]
+C223nk←{k n←⍺ ⍵
+    (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
+    ,[⍳2](k C213nk n)[;P n]
 }

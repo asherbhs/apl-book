@@ -20,23 +20,12 @@
     - [ ] stars and bars
     - [ ] twelvefold way
     - [ ] implementation of the whole twelvefold way
-        - [x] unlabelled, unlabelled, ≤1
-        - [x] unlabelled, unlabelled, any
-        - [x] unlabelled, unlabelled, ≥1
-        - [x] unlabelled,   labelled, ≤1
-        - [x] unlabelled,   labelled, any
-        - [x] unlabelled,   labelled, ≥1
-        - [x]   labelled, unlabelled, ≤1
-        - [x]   labelled, unlabelled, any
-        - [x]   labelled, unlabelled, ≥1
-        - [ ]   labelled,   labelled, ≤1
-        - [ ]   labelled,   labelled, any
-        - [ ]   labelled,   labelled, ≥1
-        - [ ] add missing knuths for set partitions and combinations, missing recursive for integer partitions
-        - [ ] improvements
-            - [ ] comments
-            - [ ] localisations
-            - [ ] appendix implementation with ⎕io insensitivity and error handling
+        - for each of the twelve
+            - count functions
+            - result mapping balls -> boxes (if appropriate)
+            - result mapping boxes -> balls (if appropriate)
+            - implementation in terms of recurrences (reference knuth for imperative implementations)
+            - edge cases handled
     - [ ] catalan numbers
     - [ ] generating functions?
     - [ ] multiset partitions?
