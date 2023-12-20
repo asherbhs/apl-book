@@ -377,6 +377,24 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="the-catalan-numbers">
 <h1>The Catalan Numbers<a class="headerlink" href="#the-catalan-numbers" title="Permalink to this heading">#</a></h1>
+<ul class="simple">
+<li><p>what are they - dyck paths</p></li>
+<li><p>simple examples</p></li>
+<li><p>recurrence and proof</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">n+1</span> <span class="pre">←→</span> <span class="pre">+/(C×(C</span> <span class="pre">n-⊢))¨0,⍳n</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">C←{⍵=0:</span> <span class="pre">1</span> <span class="pre">⋄</span> <span class="pre">+/(∇×(∇⍵-1+⊢))¨¯1+⍳⍵}</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Cs←{(⊢,⊢+.×⌽)⍣(⍵-1),1}</span></code></p></li>
+</ul>
+</li>
+<li><p>closed form and proof</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">C</span> <span class="pre">n</span> <span class="pre">←→</span> <span class="pre">(n!2×n)-(n-1)!2×n</span> <span class="pre">←→</span> <span class="pre">(n+1)÷⍨n!2×n</span></code></p></li>
+</ul>
+</li>
+<li><p>more catalan number examples</p></li>
+<li><p>mention stanley book</p></li>
+</ul>
 </section>
 
     <script type="text/x-thebe-config">

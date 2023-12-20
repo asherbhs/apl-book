@@ -17,10 +17,8 @@
 - [ ] enumerative combinatorics
     - [x] implementation of the whole twelvefold way
     - [ ] write
-        - [ ] simple counting problems (factorial, binomial, pascal's triangle, multinomial)
-        - [ ] inclusion exclusion principle and consequences (derangements, surjections, bell numbers)
-        - [ ] stars and bars
-        - [ ] twelvefold way
-        - [ ] catalan numbers
-        - [ ] generating functions?
+        - [x] outline
+        - [ ] enumerative
+        - [ ] twelvefold
+        - [ ] catalan
 - [ ] graph theory

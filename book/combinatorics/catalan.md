@@ -19,6 +19,7 @@ kernelspec:
 - recurrence and proof
     - `C n+1 ←→ +/(C×(C n-⊢))¨0,⍳n`
     - `C←{⍵=0: 1 ⋄ +/(∇×(∇⍵-1+⊢))¨¯1+⍳⍵}`
+    - `Cs←{(⊢,⊢+.×⌽)⍣(⍵-1),1}`
 - closed form and proof
     - `C n ←→ (n!2×n)-(n-1)!2×n ←→ (n+1)÷⍨n!2×n`
 - more catalan number examples

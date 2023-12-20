@@ -146,7 +146,7 @@ C213kn←{k n←⍺ ⍵    ⍝ labels of partitions
 ⊂⍤⊢⌸⍤1 C213nk
 
 ⍝ k labelled balls, n labelled boxes, at most 1 ball per box - partial permutations
-(!k)×k!n          ⍝ number of ways
+(!k)×k!n ←→ (!n)÷!n-k    ⍝ number of ways
 C221kn←{k n←⍺ ⍵    ⍝ all ways
     (≢∘⌊⍨∨0 0∨.>⊢)k n: '⍺ and ⍵ must be non-negative integers'⎕signal 11
     ,[⍳2](k C121kn n)[;P k]
