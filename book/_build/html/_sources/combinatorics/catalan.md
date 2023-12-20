@@ -12,6 +12,5 @@ kernelspec:
   name:         dyalog_apl
 ---
 
-# Combinatorics
-
+# The Catalan Numbers
 

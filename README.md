@@ -15,18 +15,12 @@
 - [x] setup jupyter book
 - [x] get working with dyalog kernel
 - [ ] enumerative combinatorics
-    - [ ] simple counting problems (factorial, binomial, pascal's triangle, multinomial)
-    - [ ] inclusion exclusion principle and consequences (derangements, surjections, bell numbers)
-    - [ ] stars and bars
-    - [ ] twelvefold way
-    - [ ] implementation of the whole twelvefold way
-        - for each of the twelve
-            - count functions
-            - result mapping balls -> boxes (if appropriate)
-            - result mapping boxes -> balls (if appropriate)
-            - implementation in terms of recurrences (reference knuth for imperative implementations)
-            - edge cases handled
-    - [ ] catalan numbers
-    - [ ] generating functions?
-    - [ ] multiset partitions?
-    - [ ] exercises - some can be done by paper, but most should require using an interpreter
+    - [x] implementation of the whole twelvefold way
+    - [ ] write
+        - [ ] simple counting problems (factorial, binomial, pascal's triangle, multinomial)
+        - [ ] inclusion exclusion principle and consequences (derangements, surjections, bell numbers)
+        - [ ] stars and bars
+        - [ ] twelvefold way
+        - [ ] catalan numbers
+        - [ ] generating functions?
+- [ ] graph theory
