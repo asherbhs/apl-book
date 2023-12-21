@@ -7,6 +7,9 @@ parts:
   - caption: Combinatorics
     chapters:
     - file: combinatorics/enumerative
+      sections:
+      - file: combinatorics/combinations-and-bijective-proofs
+      - file: combinatorics/counting-functions
     - file: combinatorics/twelvefold
     - file: combinatorics/catalan
   - caption: Graph Theory

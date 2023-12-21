@@ -12,70 +12,7 @@ kernelspec:
   name:         dyalog_apl
 ---
 
-# Enumerative Combinatorics
-
-```{code-cell}
-⎕IO←1
-]box on -style=max
-```
-
-## How to Count
-
-Enumerative Combinatorics is, in essence, the study of counting. Of course, we all (hopefully) know how to count, but in this chapter we'll be using much more insightful techniques than you were taught as a child.
-
-Let's start with a simple example. Say we have a group of people - Alice, Bob, and Charlie - and we ask them to pick their favourite from a group of colours - red, green, blue, and yellow. How many different ways can our hypothetical gang pick these colours? Well, Alice has $4$ choices, as do Bob and Charlie, so there are a total of `4×4×4 ←→ 4*3 ←→ 64` possibilities. This holds in general. Say we have `k` people and `n` colours, there are `n*k` ways for them to pick their favourite colours.
-
-Consider another problem: we have a bookshelf nicely filled with $5$ books. How many ways are there to arrange our shelf? If we took all our books off the shelf and put them back on, one by one, we would have $5$ books to put the first place, then $4$ books to put the second, and so on. This means there are `5×4×3×2×1 ←→ 120` ways to rearrange the books. Such a rearrangement of items is called a *permutation*, so we can say that there are $120$ different permutations of $5$ books. For example, if our set of books is `'The Little Prince' 'Elements' 'Cosmos' 'A Programming Language' 'The Hobbit'`, a permutation of the books might be `'A Programming Language' 'Cosmos' 'Elements' 'The Hobbit' 'The Little Prince'`.
-
-Our calculation to count the permutations nicely generalises - if we have $k$ books, then there are `k×(k-1)×(k-2)×...×2×1 ←→ ×/⍳k` permutations of them. In combinatorics, this quantity is used all the time, so it gets its own name: the *factorial*. APL has factorial built in as monadic `!`:
-
-```{code-cell}
-5×4×3×2×1
-×/⍳5
-!5
-```
-
-`!0` is defined as $1$, since that's the result of an empty product. We can also imagine the case of rearranging a bookshelf with no books on it. There's exactly one way to do this: doing nothing at all.
-
-```{code-cell}
-×/⍳0
-!0
-```
-
-In traditional mathematical notation, the factorial is written postfix:
-
-$$k!=n\times(n-1)\times(n-2)\times\cdots\times 2\times 1$$
-
-Now let's consider a slightly more restricted scenario. We still want to put $5$ books onto our bookshelf, but now we're selecting from a larger collection of $8$ books. So, starting with an empty bookshelf, we have $8$ books which could go in the first place, $7$ books for the second, and so on until we have $4$ books remaining for the final place. This means there are `8×7×6×5×4 ←→ 6720` arrangments of $5$ books our of our collection of $8$ - a lot of choice! To calculate this, we want to take the whole product `8×7×6×5×4×3×2×1 ←→ !8` and chop off the trailing `3×2×1 ←→ !3`, which we can do by dividing them: `8×7×6×5×4 ←→ (!8)÷!3 ←→ (!8)×!8-5`. Since an arrangement of all our books is a permutation, an arrangement of only some of them is a *partial permutation* or *$k$-permutation* (for arrangements of $k$ books). For example, given out set of books `'The Little Prince' 'Elements' 'Cosmos' 'A Programming Language' 'The Hobbit'`, a $3$-permutation might be `'A Programming Language' 'The Little Prince'`. Once again, our counting calculation generalises, so we know there are `(!n)÷!n-k` *$k$-permutations* of $n$ items. 
-
-These are the kinds of problems we're concerned with in enumerative combinatorics. Over the remainder of this chapter, we'll be returning to these problems as well as many more. Once we've covered enough ground, we're going to see a unified framework for looking at all sorts of counting problems called 'The Twelvefold Way'. At this point, we'll also look not just at counting all the possibilities for a problem, but also algorithms for generating them all.
-
-```{important}
-- Enumerative combinatorics is the study of counting finite structures.
-- The factorial: `!k ←→ ×/⍳k ←→ k×(k-1)×(k-2)×...×2×1`, $k!$.
-- A *permutation* is a rearrangement of a set.
-- There are `!n` permutations of an $n$ element set.
-- A *$k$-permutation* is an arrangement of exactly $k$ elements of a set.
-- There are `(!n)÷!n-k` $k$-permutations of an $n$ element set.
-```
-
-## Combinations and Bijective Proofs
-
-- derive (!n)÷(!k)×!n-k
-- define `k!n`
-- basic identities
-    - `k!n ←→ (n-k)!n`
-    - `0!n ←→ n!n ←→ 1`
-- flipping partitions to show identities
-- pascal's triangle
-    - `⍉∘.!⍨¯1+⍳n`
-- show above identities on pascal's triangle
-- proof of each element being the sum of the two above
-- highlight `2*¯1+⍳7 ←→ +/⍉∘.!⍨¯1+⍳n`
-- bijective proof
-- binomial theorem
-- aside: multinomial coefficients and theorem
-    - `(!n←+/ks)÷×/!ks`
+# Combinations and Bijective Proofs
 
 In this section, we're going to encounter one of the most basic and useful concepts in combinatorics: *combinations*.
 
@@ -150,6 +87,8 @@ This is nice representation of a combination, since it doesn't matter what order
 
 This representation gives us a new way to look at combinations - out of a sequence of $n$ $0$s, we choose $k$ to turn into ones. Equally, you can view this as a sequence of $n$ $1$s, where we choose $n-k$ to turn into $0$s. In other words, we're choosing $n-k$ to *not* select. Since there are the same number of ways to choose $k$ items as there are to discard $n-k$ items, it must be the case that `(k!n)≡(n-k)!n`.
 
+## Pascal's Triangle and Bijective Proofs
+
 To study the binomial coefficient in more detail, it will be helpful to look at its function table:
 
 ```{code-cell}
@@ -194,60 +133,64 @@ Those are all powers of $2$! Specifically, each `n+1`th row of the triangle sums
 
 Again, we can prove this alegebraically, but it's much more insightful to prove it bijectively. `+/(0,⍳n)!n` is the number of ways to pick a $1$-combination from $n$ items, plus the number of ways to pick a $2$-combination, and a $3$-combination, and so on until $n$-combination. In other words, it is the number of ways to pick a combination of any size. The number of ways to pick a combination of any size can also be described differently. For each item in the set, we have $2$ choices: either we can pick it or we can not pick it. Therefore there are `2*n` ways to pick a combination of any size from an $n$ element set. Since both `+/(0,⍳n)!n` and `2*n` count the number of ways to pick a combination of any size from an $n$ element set, the expressions must be equal for all $n$.
 
-Now, we're ready to see the namesake of the binomial coefficient `k!n`. 
+## The Binomial Theorem
 
-## Counting Functions
+Now, we're ready to see the namesake of the binomial coefficient `k!n`. Take a look at the expansion of $(a+b)^n$ for some small values of $n$:
 
-```{note}
-This chapter assumes you're familiar with the notions of injective, surjective, and bijective functions.
+$$
+\begin{aligned}
+    (a+b)^2&=a^2+\mathbf{2}ab+b^2 \\
+    (a+b)^3&=a^3+\mathbf{3}a^2b+\mathbf{3}ab^2+b^3 \\
+    (a+b)^4&=a^4+\mathbf{4}a^3b+\mathbf{6}a^2b^2+\mathbf{4}ab^3+b^4 \\
+    (a+b)^5&=a^5+\mathbf{5}a^4b+\mathbf{10}a^3b^2+\mathbf{10}a^2b^3+\mathbf{5}ab^4+b^5 \\
+    \vdots
+\end{aligned}
+$$
+
+Those coefficients might be ringing some bells in your head. They're exactly the numbers in Pascal's triangle! This is no coincidence. When we multiply by $(a+b)$, the distributive law creates two different sub-expressions, one where everything is multiplied by $a$, and another where everything is multiplied by $b$. This leads to the eventual result being made up of strings of $a$s and $b$s multiplied together in all possible ways, for example:
+
+$$
+\begin{aligned}
+    (a+b)^3&=(a+b)(a+b)(a+b) \\
+           &=(a+b)(aa+ab+ba+bb) \\
+           &=aaa+aab+aba+abb+baa+bab+bba+bbb &&\text{sum of all possible products of }a\text{s and }b\text{s}\\
+           &=a^3+3a^2b+3ab^2+b^3 \\
+\end{aligned}
+$$
+
+A we can think of each string of $a$s and $b$s as just a relabelling of a binary string, where each $1$ is replaced by an $a$, and each $0$ by a $b$. This is exactly a representation of combinations that we've already seen! This means that the coefficient on, for example, $a^2b$ must be the number of strings of $a$s and $b$s with exactly $2$ $a$s, which is the same as the number of length-$3$ binary strings with exactly $2$ $1$s, which is the same as the number of combinations of $2$ items from a set of $3$ elements - $\binom{3}{2}$. In general, this gives us the *binomial theorem*:
+
+$$
+(a+b)^n=\sum_{k=0}^n\binom{n}{k}a^kb^{n-k}
+$$
+
+Since $\binom{n}{k}$ is the *coefficient* in the *binomial* theorem, it takes the name *binomial coefficient*.
+
+The reasoning behind the binomial theorem is somewhat easier to grasp when written in traditional mathematical notation, but we can, of course, express the result in APL terms: `(a+b)*n ←→ +/(!∘n×(a*⌽)×b*⊢)0,⍳n`. 
+
+```{code-cell}
+a b n←3 4 5
+(a+b)*n
++/(!∘n×(a*⌽)×b*⊢)0,⍳n
 ```
 
-- introduce balls and boxes analogy
-- recall functions, injective, surjective, bijective
-- `n*k` possible functions
-- balls in boxes is function ball → box
-- combinations are injective functions
-- permutations are bijective functions
-- next we'll count surjections
+```{admonition} Aside
+Essentially, when we take a combination of items from a set, we're splitting it into two partitions: the items we take and the items we don't. We can generalise this to more partitions. If we have some group sizes $k_1,k_2,\ldots,k_r$ whose sum is $n$, there are
 
-## Inclusion-Exclusion and Counting Partitions
+$$\binom{n}{k_1,k_2,\ldots,k_r}=\frac{n!}{k_1!k_2!\cdots k_r!}$$
 
-- binary inclusion exclusion
-    - `≢a∪b ←→ +/≢¨a b (a∩b)`
-- n-ary inclusion exclusion and proof
-    - `≢⊃∪/as ←→ +/(≢⍤(⊃∩/) × ¯1*¯1+≢)¨ ⊂⍤/∘as⍤1⍉2⊥⍣¯1⍳¯1+2*≢as`
-- counting derangements
-    - `(!n)-+/((¯1*¯1+⊢)×!∘n×(!n-⊢))⍳n ←→ +/(¯1∘* × !∘n × (!n-⊢))0,⍳n ←→ (!n)×+/(¯1∘*÷!)0,⍳n`
-- counting surjections using inclusion-exclusion
-    - `k Surj n ←→ +/(!∘n×¯1∘*×k*⍨n-⊢)0,⍳n`
-- stirling numbers (of the second kind) - set partitions is unlabelling boxes, so divide by `!n`
-    - `k S n ←→ (!n)÷⍨k Surj n`
-- stirling triangle and bell numbers
+ways to split the $n$ element set into partitions with sizes $k_1,k_2,\ldots,k_r$. This is the *multinomial* coefficient.
 
-## Stars and Bars
+Splitting into two groups with sizes $k$ and $n-k$ specialises the multinomial coefficent to the familiar binomial coefficent we've been studying in this section.
+```
 
-- diagramssss
-- unlabelled balls into labelled boxes
-    - `'*|**||*|' ←→ '*|**||*|'[7 2 4 1 5 6 3 8]`
-- ways to generate
-    - combinations of bars from string
-    - `k!k+n-1 ←→ (n-1)!k+n-1` ways
-- surjective stars and bars
-    - first pick k-n, then add n to each one
-    - `(k-n)!k-1 ←→ (n-1)!k-1` ways
-
-## Integer Partitions
-
-- unlabelled balls, unlabelled boxes, any or at least 1 per box
-- no closed form, but we can still generate
-- young diagram
-- conjugate partitions - equivalent counts theorem
-- self conjugate partitions
-    - `7 6 4 4 4 2 2 1`
-- self conjugate partitions ←→ distinct odd partitions
-- proof using hook numbers in young tableaux
-
-## Twelvefold Teaser
-
-- some combinations of labelling and numbering we haven't tried
-- this is the topic of the next section
+```{important}
+- A *combination* is an unordered selection of distinct elements from a set.
+- A *$k$-combination* is a combination of exactly $k$ elements.
+- There are `k!n ←→ (!n)÷(!k)×!n-k` $k$-combinations from an $n$ element set. This is the *binomial coefficient*.
+- The function table of `!` gives us Pascal's triangle.
+- `k!n ←→ (k!n-1)+(k-1!n-1)`
+- A *bijective proof* is a way of showing two formulas are equivalent by showing that they count sets which are the same size.
+- The sum of a row of Pascal's triangle is a power of two, since it's related to counting all combinations of elements of a set.
+- The binomial coefficient features in the expansion of $(a+b)^n$ in the *binomial theorem*.
+```
