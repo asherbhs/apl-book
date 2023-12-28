@@ -26,6 +26,36 @@ This section assumes you're familiar with the notions of injective, surjective, 
 - permutations are bijective functions
 - next we'll count surjections
 
+## Balls and Boxes
+
+So far we've looked at two different counting problems: counting $k$-permutations and counting $k$-combinations. It turns out there's a way of looking at these problems which shows an interesting way they are related, and lights the way towards understanding the problems we're going to see over the rest of this chapter.
+
+In the previous section, we saw how we can represent a combination as a binary string:
+
+```{code-cell}
+'🍎🍌🍊🍐🍇'∊'🍎🍊🍐'
+```
+
+Suppose each character of this string corresponds to a box. Wherever a `0` appears, we leave the box empty. Wherever a `1` appears, we place a ball in the box. Each box represents an element of the original set, and placing a ball in the box represents selecting that element to be included in a combination.
+
+The most important thing to notice about this analogy is this: the boxes are *labelled*, while the balls are *unlabelled*. Exactly which ball a box gets doesn't matter, since the balls are indistinguishable. However, which box a ball is placed in does matter, since that dictates which element of the set is chosen. In this sense, the boxes are labelled with the elements of the set.
+
+![Unlabelled balls in boxes labelled with `'🍎🍌🍊🍐🍇'`.](../manim/media/images/combinatorics/BallsBoxes1_ManimCE_v0.18.0.png)
+
+This setup gives us an alternative statement of the combination problem: there are `k!n` ways to place $k$ unlabelled balls into $n$ labelled boxes, with at most one ball in each box.
+
+In isolation this is not particularly enlightening, but things get more interesting when we notice that we can tweak the parameters of the problem in three different ways. We can change whether the balls are labelled, whether the boxes are labelled, and how many balls are allowed in each box. This gives way to a whole family of counting problems, and we'll be categorising them all in the next chapter. For now, let's see how changing just one part of the problem effects things.
+
+Let's say that, instead of being indistinguishable, we're going to label our $k$ balls with `⍳k`. Now, it does matter exactly which ball goes into which box:
+
+![Balls labelled with $1$ and $2$ in boxes labelled with `'🍎🍌🍊🍐🍇'`.](../manim/media/images/combinatorics/BallsBoxes2_ManimCE_v0.18.0.png)
+
+With labelled balls, the problem no longer corresponds to counting $k$-combinations. Instead, it corresponds to counting $k$-*permutations*. If we take the label of ball as the index in a $k$-permutation, placing the balls in the boxes corresponds to choosing which element is placed at each index.
+
+![Labelled balls into labelled boxes and resulting partial permutation.](../manim/media/images/combinatorics/BallsBoxes3_ManimCE_v0.18.0.png)
+
+In later sections, we're going to look at the other specific counting problems we can make by varying the labelling of both the balls and boxes. We're also going to look at how controlling the number of balls which can go into each box affects the problems we make.
+
 # Inclusion-Exclusion and Counting Partitions
 
 - binary inclusion exclusion
