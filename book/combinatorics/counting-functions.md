@@ -18,14 +18,6 @@ kernelspec:
 This section assumes you're familiar with the notions of injective, surjective, and bijective functions.
 ```
 
-- introduce balls and boxes analogy
-- recall functions, injective, surjective, bijective
-- `n*k` possible functions
-- balls in boxes is function ball → box
-- combinations are injective functions
-- permutations are bijective functions
-- next we'll count surjections
-
 ## Balls and Boxes
 
 So far we've looked at two different counting problems: counting $k$-permutations and counting $k$-combinations. It turns out there's a way of looking at these problems which shows an interesting way they are related, and lights the way towards understanding the problems we're going to see over the rest of this chapter.
@@ -54,46 +46,67 @@ With labelled balls, the problem no longer corresponds to counting $k$-combinati
 
 ![Labelled balls into labelled boxes and resulting partial permutation.](../manim/media/images/combinatorics/BallsBoxes3_ManimCE_v0.18.0.png)
 
-In later sections, we're going to look at the other specific counting problems we can make by varying the labelling of both the balls and boxes. We're also going to look at how controlling the number of balls which can go into each box affects the problems we make.
+In later sections, we're going to look at the other specific counting problems we can make by varying the labelling of both the balls and boxes. We're also going to look at how controlling the number of balls which can go into each box affects the problems we make, which is going to require being more formal with our analogy.
 
-# Inclusion-Exclusion and Counting Partitions
+## Counting Functions
 
-- binary inclusion exclusion
-    - `≢a∪b ←→ +/≢¨a b (a∩b)`
-- n-ary inclusion exclusion and proof
-    - `≢⊃∪/as ←→ +/(≢⍤(⊃∩/) × ¯1*¯1+≢)¨ ⊂⍤/∘as⍤1⍉2⊥⍣¯1⍳¯1+2*≢as`
-- counting derangements
-    - `(!n)-+/((¯1*¯1+⊢)×!∘n×(!n-⊢))⍳n ←→ +/(¯1∘* × !∘n × (!n-⊢))0,⍳n ←→ (!n)×+/(¯1∘*÷!)0,⍳n`
-- counting surjections using inclusion-exclusion
-    - `k Surj n ←→ +/(!∘n×¯1∘*×k*⍨n-⊢)0,⍳n`
-- stirling numbers (of the second kind) - set partitions is unlabelling boxes, so divide by `!n`
-    - `k S n ←→ (!n)÷⍨k Surj n`
-- stirling triangle and bell numbers
+Consider again the balls and boxes example we've just seen. It involves assigning a box to each ball we have. In other words, each placement of balls is equivalent to a monadic function which takes a ball as input, and returns the box it is placed in as output. We've been working with our fruit example until now, but to show how our problems can work for any set, we're going to start using generic sets of inputs and outputs. This is not quite as fun but it helps to forget about the details of examples and just think about the counting itself. Specifically, we'll just use `⍳k` as our $k$ element input set (our 'balls'), and `⍳n` as our $n$ element output set (our 'boxes') from now on. In traditional mathematical notation, this means we're working with functions $f$ with type $f:[k]\to[n]$.
 
-# Stars and Bars
+For each $k$ and $n$, there are `n*k` possible functions from `⍳k` to `⍳n` (functions with type $[k]\to[n]$). However, our counting problems usually have fewer valid assignments than this. For example, in our $k$-permutations problem, we only allowed at most one ball to be placed in each box, which means any function that places two or more balls in the same box isn't counted.
 
-- diagramssss
-- unlabelled balls into labelled boxes
-    - `'*|**||*|' ←→ '*|**||*|'[7 2 4 1 5 6 3 8]`
-- ways to generate
-    - combinations of bars from string
-    - `k!k+n-1 ←→ (n-1)!k+n-1` ways
-- surjective stars and bars
-    - first pick k-n, then add n to each one
-    - `(k-n)!k-1 ←→ (n-1)!k-1` ways
+```{code-cell}
+Valid3Permutation←{
+    ⍵=1: 4
+    ⍵=2: 1
+    ⍵=3: 3
+}
 
-# Integer Partitions
+Invalid3Permutation←{     ⍝ invalid: both 2 and 3 are sent to 1
+    ⍵=1: 4
+    ⍵=2: 1
+    ⍵=3: 1
+}
 
-- unlabelled balls, unlabelled boxes, any or at least 1 per box
-- no closed form, but we can still generate
-- young diagram
-- conjugate partitions - equivalent counts theorem
-- self conjugate partitions
-    - `7 6 4 4 4 2 2 1`
-- self conjugate partitions ←→ distinct odd partitions
-- proof using hook numbers in young tableaux
+⊢p←Valid3Permutation¨⍳3
+'🍎🍌🍊🍐🍇'[p]
 
-# Twelvefold Teaser
+⊢p←Invalid3Permutation¨⍳3
+'🍎🍌🍊🍐🍇'[p]
+```
 
-- some combinations of labelling and numbering we haven't tried
-- this is the topic of the next section
+This shows that in our counting problems which require at most one ball in a box, we are really counting *injective* functions, i.e. functions which which don't send more than one element of the input to the same output. Note that for a function $[k]\to[n]$ to be injective, we much have `k≤n`, or we would have so many balls that at least one box would need to be given more than one.
+
+We can also think about what counting *surjective* functions, that is, functions where each element of `⍳n` has at least one element of `⍳k` which is sent to it, means for our counting problems. In the balls and boxes analogy, it means that each box gets *at least* one ball placed in it, potentially more. Note that here, a function $[k]\to[n]$ must have `k≥n` to have a chance of being surjective, otherwise we wouldn't have enough balls to put at least one in each box.
+
+The labelling or balls and boxes translates to whether we care about the ordering of elements of `⍳k` and `⍳n` when we count functions. For example, we model combinations and placing unlabelled balls into labelled boxes, so the following functions would be considered the same combination.
+
+```{code-cell}
+Combination1←{
+    ⍵=1: 1
+    ⍵=2: 3
+    ⍵=3: 4
+}
+
+Combination2←{
+    ⍵=1: 4
+    ⍵=2: 3
+    ⍵=3: 1
+}
+```
+
+In the next section we're going to look at counting surjections, and see how varying our labelling affects things.
+
+```{important}
+- We can model many counting problems as counting functions from `⍳k` to `⍳n`.
+- Each of these functions corresponds to a way of placing $k$ balls into $n$ boxes.
+- We might not want to distinguish between balls and boxes
+- We might want to say at most one, or at least 1, ball should b placed in each box.
+- The effect of these restrictions is summarised below.
+
+| Balls into Boxes          | Functions                       |
+| ----------------          | ---------                       |
+| Balls unlabelled          | Count up to ordering of domain  |
+| Boxes unlabelled          | Count up to ordering of range   |
+| At most one ball per box  | Count only injective functions  |
+| At least one ball per box | Count only surjective functions |
+```

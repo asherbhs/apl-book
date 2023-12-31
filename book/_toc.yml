@@ -10,6 +10,7 @@ parts:
       sections:
       - file: combinatorics/combinations-and-bijective-proofs
       - file: combinatorics/counting-functions
+      - file: combinatorics/inclusion-exclusion
     - file: combinatorics/twelvefold
     - file: combinatorics/catalan
   - caption: Graph Theory
