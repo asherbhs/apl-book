@@ -14,8 +14,6 @@ kernelspec:
 
 # Inclusion-Exclusion and Counting Partitions
 
-- stirling triangle and bell numbers
-
 The topic of this section will be counting surjective functions, but we need to build up some more tools before we can do that.
 
 ## The Inclusion-Exclusion Principle
@@ -55,9 +53,9 @@ The pattern emerging here is that we add the individual set sizes, substract the
 
 ```
 p←a⊂⍤/⍨⍤1⍉2⊥⍣¯1⍳¯1+2*≢a    ⍝ all non-empty subsets of a
-⍝                      ┌───────┬─sizes of the intersections of all the sets in subsets
-≢⊃∪/a ←→ +/(¯1*~2|≢¨p)×{≢⊃∩/⍵}¨p
-⍝          └──────────┴─subtract if there are an even number of sets subsets, else add
+⍝                     ┌───────┬─sizes of the intersections of all the sets in subsets
+≢⊃∪/a ←→ +/(¯1*1+≢¨p)×{≢⊃∩/⍵}¨p
+⍝          └────────┴─subtract if there are an even number of sets subsets, else add
 ```
 
 In traditional mathematical notation, this is written as
@@ -73,7 +71,7 @@ a←'ABC' 'CD' 'EFG' 'FG' 'GH'
 ⊃∪/a
 ≢⊃∪/a
 ⍪p←a⊂⍤/⍨⍤1⍉2⊥⍣¯1⍳¯1+2*≢a
-+/(¯1*~2|≢¨p)×{≢⊃∩/⍵}¨p
++/(¯1*1+≢¨p)×{≢⊃∩/⍵}¨p
 ```
 
 To prove that this is true, consider any element $x$ of `⊃∪/a`. Let $b$ be the subset of $a$ which contains only the sets which contain $x$.
