@@ -14,16 +14,6 @@ kernelspec:
 
 # Inclusion-Exclusion and Counting Partitions
 
-- binary inclusion exclusion
-    - `≢a∪b ←→ +/≢¨a b (a∩b)`
-- n-ary inclusion exclusion and proof
-    - `≢⊃∪/as ←→ +/(≢⍤(⊃∩/) × ¯1*¯1+≢)¨ ⊂⍤/∘as⍤1⍉2⊥⍣¯1⍳¯1+2*≢as`
-- counting derangements
-    - `(!n)-+/((¯1*¯1+⊢)×!∘n×(!n-⊢))⍳n ←→ +/(¯1∘* × !∘n × (!n-⊢))0,⍳n ←→ (!n)×+/(¯1∘*÷!)0,⍳n`
-- counting surjections using inclusion-exclusion
-    - `k Surj n ←→ +/(!∘n×¯1∘*×k*⍨n-⊢)0,⍳n`
-- stirling numbers (of the second kind) - set partitions is unlabelling boxes, so divide by `!n`
-    - `k S n ←→ (!n)÷⍨k Surj n`
 - stirling triangle and bell numbers
 
 The topic of this section will be counting surjective functions, but we need to build up some more tools before we can do that.
@@ -148,20 +138,20 @@ So, if we want to count the derangements of $n$ elements (and we don't want to g
 
 The intersection of any $i$ sets in $s$ will fix $i$ objects, and therefore will have `!n-i` elements. There are `i!n` ways to pick $i$ sets from $s$.
 
-This gives us all the information we need to use the principle of inclusion and exclusion find `≢⊃∪/s`.
+This gives us all the information we need to use the principle of inclusion and exclusion find `≢⊃∪/s`. Rather than summing over all subsets of $s$, we can group together the subsets into those of the same size. For all $i$, the total size of subsets of $s$ which have size $i$ is `(i!n)×!n-i`.
 
 ```
 n←≢s
 p←s⊂⍤/⍨⍤1⍉2⊥⍣¯1⍳¯1+2*n    ⍝ all nonempty subsets of s
 ≢⊃∪/s ←→ +/(¯1*1+≢¨p)×{≢⊃∩/⍵}¨p
-      ←→ +/(¯1*1+i)×(i!n)×!n-i←⍳n               ⍝ we know exactly how big each subset will be, and how many subsets of that size there are
+      ←→ +/(¯1*1+i)×(i!n)×!n-i←⍳n               ⍝ grouping subsets of the same size
                                                 ⍝ note that i here is all the possible values for i above in a vector
       ←→ +/(¯1*1+i)×((!n)÷(!i)×!n-i)×!n-i←⍳n    ⍝ expanding out the binomial coefficient
       ←→ +/(¯1*1+i)×(!n)÷!i←⍳n                  ⍝ !n-i cancels out
       ←→ (!n)×+/(¯1*1+i)÷!i←⍳n                  ⍝ factoring out !n
 ```
 
-Therefore, the number of derangements is
+Therefore, the number of derangements of $n$ elements is
 
 ```
 (!n)-≢⊃∪/s ←→ (!n)-(!n)×+/(¯1*1+i)÷!i←⍳n
@@ -176,38 +166,88 @@ NDerangements¨⍳10    ⍝ https://oeis.org/A000166
 ```
 
 ```{admonition} Aside
-The sum in the formula we just derived is actually the Taylor polynomial for $e$ (`*1`), so we could also write
+The sum in the formula we just derived is actually the Taylor polynomial for $e^{-1}$ (`*¯1`), so we could also write
 
-`NDerangements←⌊.5+(*1)÷⍨!`
+`NDerangements←⌊.5+(*¯1)×!`
 ```
 
 ## Counting Surjections
 
-# Stars and Bars
+Now that we're used to the principle of inclusion and exclusion, we're ready to start counting surjections. Returning to our balls in boxes analogy, a surjection $[k]\to[n]$ is a function which places at least one of the $k$ balls into each of the $n$ boxes. To count surjections, we're going to use a similar method to the one we used to count derangements - we're going to try and count all the functions which are *not* surjections, and subtract that from the total number of functions.
 
-- diagramssss
-- unlabelled balls into labelled boxes
-    - `'*|**||*|' ←→ '*|**||*|'[7 2 4 1 5 6 3 8]`
-- ways to generate
-    - combinations of bars from string
-    - `k!k+n-1 ←→ (n-1)!k+n-1` ways
-- surjective stars and bars
-    - first pick k-n, then add n to each one
-    - `(k-n)!k-1 ←→ (n-1)!k-1` ways
+Let $a$ be the set of sets of functions $[k]\to[n]$ (represented as vectors as discussed in the previous sections) such that no function in `a[i]` sends any of its inputs to $i$. That is, `~∨/i∊¨a[i]`. Since each function in `a[i]` 'misses' $i$, `⊃∪/a` is the set of functions which miss any element of `⍳n`, i.e. the set of functions which are not surjections.
 
-# Integer Partitions
+Since there are no other restrictions on the functions in `a[i]` other than that they cannot send any input to $i$, there are `(n-1)*k` functions in `a[i]`. Likewise, there are `(n-2)*k` in `a[i]∩a[j]` for any different $i$ and $j$, since these functions must miss both $i$ and $j$. In general, for some subset $b$ of $a$, `≢⊃∩/b ←→ (n-≢b)*k`. Just like we did when counting derangements, we can group together subsets of $a$ which are the same size. There are `m!n` subsets of size $m$ in $n$, and there are `(n-m)*k` functions in each of these subsets. Therefore, by applying the principle of inclusion and exclusion we have
 
-- unlabelled balls, unlabelled boxes, any or at least 1 per box
-- no closed form, but we can still generate
-- young diagram
-- conjugate partitions - equivalent counts theorem
-- self conjugate partitions
-    - `7 6 4 4 4 2 2 1`
-- self conjugate partitions ←→ distinct odd partitions
-- proof using hook numbers in young tableaux
+```
+≢⊃∪/a ←→ +/(¯1*1+m)×(m!n)×(n-m←⍳n)*k
+```
 
-# Twelvefold Teaser
+for the number of non-surjections $[k]\to[n]$. To find the number of surjections, we just subtract this from the total number of functions $[k]\to[n]$:
 
-- some combinations of labelling and numbering we haven't tried
-- this is the topic of the next section
+```
+(n*k)-+/(¯1*1+m)×(m!n)×(n-m←  ⍳n)*k
+   ←→ +/(¯1*  m)×(m!n)×(n-m←0,⍳n)*k 
+```
 
+Let's give it a whirl:
+
+```{code-cell}
+Surj←{k n←⍺ ⍵
+    m←0,⍳n
+    +/(¯1*m)×(m!n)×(n-m)*k
+}
+
+⍝ there are 2*4 ←→ 16 functions from ⍳4 to ⍳2
+⍝ only two of these are not surjections: 1 1 1 1 and 2 2 2 2
+⍝ 16-2 ←→ 14
+4 Surj 2
+```
+
+## Counting Set Partitions
+
+In our balls and boxes analogy, the surjections we just counted are placing *labelled* balls into *labelled* boxes. If we unlabel the boxes, we we're solving the counting problem of *set partitions*, that is, ways to partition our set of $k$ balls (or any set of size $k$) into $n$ pieces. since the boxes (the partitions) are unlabelled we don't care about their order.
+
+```
+⍝ original set
+'🍎🍌🍊🍐🍇'
+
+⍝ partitions into three pieces
+'🍎🍌🍊'  '🍐'    '🍇'    ⍝ same as '🍎🍌🍊' '🍇' '🍐', we don't care about order of partitions
+'🍎🍌🍐'  '🍊'    '🍇'    ⍝ same as '🍌🍎🍐' '🍊' '🍇', we don't care about order within a partition
+'🍎🍌'   '🍊🍐'   '🍇'
+'🍎🍌🍇'  '🍊'    '🍐'
+'🍎🍌'   '🍊🍇'   '🍐'
+⍝ and so on
+```
+
+Since the only difference between counting partitions and counting surjections is the labelling of the boxes, it's very easy to derive a formula for the number of set partitions for a given $k$ and $n$. There are `!n` ways to label the $n$ boxes, so we just need to divide the number of surjections by `!n` to find the number of set partitions. The resulting numbers are the *Stirling numbers of the second kind*[^stirling].
+
+[^stirling]: The Stirling numbers of the *first* kind count the number of permutations of $n$ elements with $k$ cycles.
+
+```{code-cell}
+Stirling←{k n←⍺ ⍵
+    (k Surj n)÷!n
+}
+
+⍝ there are 25 ways to partition a 5-element set into 3 pieces
+5 Stirling 3
+```
+
+In traditional mathematical notation, `k Stirling n` is often written
+
+$$n\brace k$$
+
+Just as we did with binomial coefficients, we can arrange the Stirling numbers in a triangle.
+
+```{code-cell}
+∘.Stirling⍨⍳7
+```
+
+Each $k$th row of this triangle represents the number of ways to partition a $k$ element set into $1,2,\ldots,n$ pieces. Therefore, summing along the rows gives the number of ways to partition a $k$ element set into any number of pieces.
+
+```{code-cell}
++/∘.Stirling⍨⍳7    ⍝ https://oeis.org/A000110
+```
+
+These are the *Bell numbers*.

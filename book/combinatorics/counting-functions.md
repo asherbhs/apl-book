@@ -52,7 +52,7 @@ In later sections, we're going to look at the other specific counting problems w
 
 Consider again the balls and boxes example we've just seen. It involves assigning a box to each ball we have. In other words, each placement of balls is equivalent to a monadic function which takes a ball as input, and returns the box it is placed in as output. We've been working with our fruit example until now, but to show how our problems can work for any set, we're going to start using generic sets of inputs and outputs. This is not quite as fun but it helps to forget about the details of examples and just think about the counting itself. Specifically, we'll just use `⍳k` as our $k$ element input set (our 'balls'), and `⍳n` as our $n$ element output set (our 'boxes') from now on. In traditional mathematical notation, this means we're working with functions $f$ with type $f:[k]\to[n]$.
 
-For each $k$ and $n$, there are `n*k` possible functions from `⍳k` to `⍳n` (functions with type $[k]\to[n]$). However, our counting problems usually have fewer valid assignments than this. For example, in our $k$-permutations problem, we only allowed at most one ball to be placed in each box, which means any function that places two or more balls in the same box isn't counted.
+For each $k$ and $n$, there are `n*k` possible functions from `⍳k` to `⍳n` (functions with type $[k]\to[n]$), since there are $n$ options for each of the $k$ inputs. However, our counting problems usually have fewer valid assignments than this. For example, in our $k$-permutations problem, we only allowed at most one ball to be placed in each box, which means any function that places two or more balls in the same box isn't counted.
 
 ```{code-cell}
 Valid3Permutation←{
@@ -94,6 +94,15 @@ Combination2←{
 }
 ```
 
+Importantly, it's possible to represent functions as vectors. We can represent some function $F:[k]\to[n]$ as a $k$-element vector, whose elements are from `⍳n`. Call this representation $f$. We then have `F x ←→ f[x]`. For example, `Combination1` above can be represented by the vector `1 3 4`.
+
+```{code-cell}
+Combination1¨2 3
+1 3 4[2 3]
+```
+
+For the remainder of this chapter, we'll be representing functions like this all the time.
+
 In the next section we're going to look at counting surjections, and see how varying our labelling affects things.
 
 ```{important}
@@ -109,4 +118,6 @@ In the next section we're going to look at counting surjections, and see how var
 | Boxes unlabelled          | Count up to ordering of range   |
 | At most one ball per box  | Count only injective functions  |
 | At least one ball per box | Count only surjective functions |
+
+- Any function with type $[k]\to[n]$ can be represented as a vector with length $k$ whose elements are from `⍳n`.
 ```
