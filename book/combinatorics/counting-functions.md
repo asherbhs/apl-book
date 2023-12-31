@@ -18,6 +18,10 @@ kernelspec:
 This section assumes you're familiar with the notions of injective, surjective, and bijective functions.
 ```
 
+```{code-cell}
+⎕IO←1
+```
+
 ## Balls and Boxes
 
 So far we've looked at two different counting problems: counting $k$-permutations and counting $k$-combinations. It turns out there's a way of looking at these problems which shows an interesting way they are related, and lights the way towards understanding the problems we're going to see over the rest of this chapter.

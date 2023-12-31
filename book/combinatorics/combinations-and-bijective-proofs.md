@@ -14,6 +14,10 @@ kernelspec:
 
 # Combinations and Bijective Proofs
 
+```{code-cell}
+⎕IO←1
+```
+
 In this section, we're going to encounter one of the most basic and useful concepts in combinatorics: *combinations*.
 
 A *combination* is a selection distinct elements from a set, without repetition, where we don't care about the order we pick elements. For example, given the set `'🍎🍌🍊🍐🍇'`, `'🍎🍌🍊'` is a combination of $3$ elements from the set. It is different to the combination `'🍎🍌🍇'`, but the same as the combination `'🍊🍌🍎'`, since we don't care about order. A *$k$-combination* is a combination of exactly $k$ elements from the set.

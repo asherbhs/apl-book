@@ -14,6 +14,10 @@ kernelspec:
 
 # Inclusion-Exclusion and Counting Partitions
 
+```{code-cell}
+⎕IO←1
+```
+
 The topic of this section will be counting surjective functions, but we need to build up some more tools before we can do that.
 
 ## The Inclusion-Exclusion Principle
@@ -55,7 +59,7 @@ The pattern emerging here is that we add the individual set sizes, substract the
 p←a⊂⍤/⍨⍤1⍉2⊥⍣¯1⍳¯1+2*≢a    ⍝ all non-empty subsets of a
 ⍝                     ┌───────┬─sizes of the intersections of all the sets in subsets
 ≢⊃∪/a ←→ +/(¯1*1+≢¨p)×{≢⊃∩/⍵}¨p
-⍝          └────────┴─subtract if there are an even number of sets subsets, else add
+⍝          └─────────┴─subtract if there are an even number of subsets, else add
 ```
 
 In traditional mathematical notation, this is written as
@@ -67,7 +71,7 @@ $$
 Let's see this in action:
 
 ```{code-cell}
-a←'ABC' 'CD' 'EFG' 'FG' 'GH'
+a←'ABC' 'CDEF' 'DEFG' 'FG'
 ⊃∪/a
 ≢⊃∪/a
 ⍪p←a⊂⍤/⍨⍤1⍉2⊥⍣¯1⍳¯1+2*≢a
@@ -78,7 +82,7 @@ To prove that this is true, consider any element $x$ of `⊃∪/a`. Let $b$ be t
 
 ```{code-cell}
 ⍝ for example
-x←'G'
+x←'F'
 ⊢b←(x∊¨a)/a
 ```
 
@@ -249,3 +253,16 @@ Each $k$th row of this triangle represents the number of ways to partition a $k$
 ```
 
 These are the *Bell numbers*.
+
+The Stirling number for any `k<n` is $0$. You can interpret this as there not being enough balls to fill all the boxes. So we know we don't need to count any Stirling numbers with `k<n` when calculating the Bell numbers.
+
+```{code-cell}
+Bell←{+/k Stirling¨⍳k←⍵}    ⍝ or +/Stirling¨∘⍳⍨ if you prefer tacit
+```
+
+```{important}
+- The principle of inclusion and exclusion says that, for some set of subsets $a$, `≢⊃∪/a ←→ +/(¯1*1+≢¨p)×{≢⊃∩/⍵}¨p`, where $p$ is the powerset of $a$.
+- There are `+/(¯1*m)×(m!n)×(n-m←0,⍳n)*k` surjective functions of type $[k]\to[n]$.
+- There are `(k Surj n)÷!n` ways to partition a $k$-element set into $n$ pieces. These are the *Stirling numbers of the second kind*.
+- There are `+/k Stirling¨⍳k` ways to partition a $k$-element set into any number of pieces. These are the *Bell numbers*.
+```
