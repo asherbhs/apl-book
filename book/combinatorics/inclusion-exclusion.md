@@ -96,7 +96,11 @@ m←+/(1!t) (-2!t) .. ((¯1*1+t)×t!t)
 By the binomial theorem (see [here](./combinations-and-bijective-proofs.md)), we have
 
 ```
-0 ←→ (1-1)*t ←→ +/(0!t) (-1!t) .. ((¯1*t)×t!t) ←→ (0!t)-m
+0 ←→ (1-1)*t
+  ←→ +/(0!t)   (-1!t) .. ((¯1*  t)×t!t)
+  ←→   (0!t)++/(-1!t) .. ((¯1*  t)×t!t)
+  ←→   (0!t)-+/( 1!t) .. ((¯1*1+t)×t!t)
+  ←→   (0!t)-m
 ```
 
 Since `1 ←→ 0!t`, $m$ must be equal to $1$, so $x$ is counted only once in the inclusion-exclusion formula.

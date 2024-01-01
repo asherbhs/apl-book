@@ -115,7 +115,7 @@ The triangle in this table is called *Pascal's triangle*, and has been studied f
 [^pascal]: Although it is named after French Mathematician [Blaise Pascal](https://en.wikipedia.org/wiki/Blaise_Pascal), Pascal's triangle was discovered and studied for centuries before him.
 
 ```{code-cell}
-⍪⊃{⍵,⊂1,(2+/⊃⌽⍵),1}/(⍳7),⊂,⊂,1    ⍝ ↑-ing this would give the same matrix as we saw before
+⍪{⍵,⊂1,(2+/⊃⌽⍵),1}⍣7⊂,1    ⍝ ↑-ing this would give the same matrix as we saw before
 ```
 
 Stated more formally, we're saying that `k!n ←→ (k!n-1)+(k-1)!n-1`. There's more than one way we can prove this. We *could* go about it algebraically, but that would be long and unenlightening. You can find the algebraic proof in the footnotes if you're interested in it[^algebraic-proof]. Instead, it's equally valid to prove this by talking about what it's describing.
