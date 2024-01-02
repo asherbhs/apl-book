@@ -1,5 +1,7 @@
 # Some Maths in Dyalog APL
 
+[Read the book here](https://asherbhs.github.io/apl-maths/intro.html)
+
 - `⎕io←1` unless otherwise specified, since most maths starts counting at 1
 - `array` `Function` `_monadicOperator` `_dyadicOperator_`
 - `←→` means apl expressions are equivalent
