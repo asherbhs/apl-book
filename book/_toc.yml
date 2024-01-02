@@ -12,6 +12,7 @@ parts:
       - file: combinatorics/counting-functions
       - file: combinatorics/inclusion-exclusion
       - file: combinatorics/stars-bars
+      - file: combinatorics/integer-partitions
     - file: combinatorics/twelvefold
     - file: combinatorics/catalan
   - caption: Graph Theory
