@@ -1,0 +1,199 @@
+:Namespace trees
+	⎕IO←0
+
+	⍝ ⌷⍨∘⊂⍨ (select) uses opposite argument order
+	I←{(⊂⍵)⌷⍺}    ⍝ approximately {⍵[⍺]}
+
+	∇ v←(f _qscan) x
+		v←⍬
+		:If     2=⎕NC'f' ⋄ g←f∘I
+		:ElseIf 3=⎕NC'f' ⋄ g←f
+		:EndIf
+		{}{
+			v,←⍵
+			g⍵
+		}⍣≡x
+	∇
+
+	⍝ drawing functions (thank you aaron)
+
+	⍝ dct :: Connectors (Get dlk Join) Formatted_Children
+	⍝ -> Connected_Children
+	⍝ Joins connectors on a rendered child tree along edge given by Get
+	dct←{⍺[(2×2≠/n,0)+(1↑⍨≢m)+m+n←⌽∨\⌽m←' '≠⍺⍺ ⍵]⍵⍵ ⍵}
+
+	⍝ dlk :: Parent (Connector dlk Axis) Connected_Children -> Subtree
+	⍝ Links a parent with its prepared children using Connector along Axis
+	dlk←{((x⌷⍴⍵)↑[x←2|1+⍵⍵]⍺),[⍵⍵]⍺⍺@(⊂0 0)⍣('┌'=⊃⍵)⊢⍵}
+
+	⍝ dwh :: Children Parent -> Subtree
+	⍝ Horizontally render a parent and its children
+	dwh←{⍵('┬'dlk 1)' │├┌└─'(0⌷⍉)dct,⊃⍪/((≢¨⍺),¨⊂⌈/≢∘⍉¨⍺)↑¨⍺}
+
+	⍝ dwv :: Children Parent -> Subtree
+	⍝ Vertically render a parent and its children
+	dwv←{k←⊃{⍺,' ',⍵}/(1+⌈/≢¨⍺){⍺↑⍵⍪⍨'│'↑⍨≢⍉⍵}¨⍺
+	 ⍵('├'dlk 0)' ─┬┌┐│'(0⌷⊢)dct(⊣⍪1↓⊢)k}
+
+	⍝ pp3 :: [Labels] (draw pp3) Parent -> Tree_Diagram
+	⍝ Pretty print a tree given node labels and a parent vector using draw
+	pp3←{⍺←'○' ⋄ d←(⍳≢p)≠p←⍵ ⋄ _←⍵{z⊣d+←⍵≠z←⍺[⍵]}⍣≡⍵
+	 lyr←{i←⍸⍺=d ⋄ k v←↓⍉p[i],∘⊂⌸i ⋄ (⍵∘{⍺[⍵]}¨v)⍺⍺¨@k⊢⍵}
+	 (p=⍳≢p)⌿⊃⍺⍺ lyr⌿(1+⍳⌈/d),⊂⍉∘⍪∘⍕¨(≢⍵)⍴⍺}
+
+	⍝ test data
+
+	N∆←'ABEFGLMNOPVZ'
+
+	p1←0 0 1 0 3 4 3 0 7 8 8 7 11 11 7
+	d2←0 1 2 1 2 3 2 1 2 3 3 2 3 3 2
+
+	p2←0 0 1 2 0 4 5 5 7 0 9 10 11 12 13 12 12 16 10 18 19 20 19 19 23 10 25
+	d2←0 1 2 3 1 2 3 3 4 1 2 3 4 5 6 5 5 6 3 4 5 6 5 5 6 3 4
+	t2←3 1 0 7 1 2 9 0 10 1 3 1 2 0 10 9 0 10 1 2 0 10 9 0 10 0 10
+
+	d3←0 1 2 3 4 5 4 5 6 7 6 6 7 4 5 6 5 6 7 8
+	p3←0 0 1 2 3 4 3 6 7 8 7 7 11 3 13 14 13 16 17 18
+	t3←3 1 3 2 0 10 3 2 0 10 9 0 10 2 0 10 3 2 0 10
+	k3←1 2 1 2 1 0 1 2 1 0 0 1 0 2 1 0 1 2 1 0
+	n3←0 ¯5 0 0 0 ¯2 0 0 0 ¯2 ¯6 0 ¯1 0 0 ¯2 0 0 0 ¯2
+	r3←0 0 0 2 2 2 2 6 6 6 6 6 6 2 2 2 2 16 16 16
+
+	d4←0 1 2 3 4 5 4 5 6 7 6 6 7 4 5 6 5 6 7 8 7 7 8 5 6 7 6 7 8 9 8 8 9 6 7
+	p4←0 0 1 2 3 4 3 6 7 8 7 7 11 3 13 14 13 16 17 18 17 17 21 13 23 24 23 26 27 28 27 27 31 23 33
+	t4←3 1 3 2 0 10 3 2 0 10 9 0 10 2 0 10 3 2 0 10 9 0 10 2 0 10 3 2 0 10 9 0 10 0 10
+	k4←1 2 1 2 1 0 1 2 1 0 0 1 0 2 1 0 1 2 1 0 0 1 0 2 1 0 1 2 1 0 0 1 0 1 0
+	n4←0 ¯5 0 0 0 ¯2 0 0 0 ¯2 ¯6 0 ¯1 0 0 ¯2 0 0 0 ¯2 ¯6 0 ¯1 0 0 ¯2 0 0 0 ¯2 ¯6 0 ¯1 0 ¯1
+	r4←0 0 0 2 2 2 2 6 6 6 6 6 6 2 2 2 2 16 16 16 16 16 16 2 2 2 2 26 26 26 26 26 26 2 2
+
+	⍝ note the digram is slightly different to the one in the thesis
+	p5←0 0 1 15 3 3 5 6 15 8 15 10 11 10 10 15
+	t5←3 1 10 4 10 1 0 7 0 7 2 0 7 9 10 3
+	k5←0 1 1 0 0 0 0 0 0 0 2 0 0 1 0 1
+	n5←0 ¯5 15 0 ¯1 ¯6 0 ¯7 0 ¯8 0 0 ¯9 ¯10 ¯1 0
+	r5←0 0 0 15 15 15 15 15 15 15 15 15 15 15 15 0
+
+	⍝ how to do stuff
+
+	⍝ delete leaf nodes given by mask m from parent vector p
+	Delete←{(m p)←⍺⍵
+		(⍸m)(⊢-1+⍸)(~m)/p
+	}
+
+	⍝ depth of each node of a tree
+	Depth←{p←⍵
+		d←p≠⍳≢p       ⍝ initial depth vector, 1 if not already a self-loop
+		              ⍝ could also start with d←0⍴⍨⍳≢p and seed the loop with ⍳≢p
+		              ⍝ but this saves us an interation
+		_←{
+			z←p[⍵]    ⍝ get parents of current set
+			d+←⍵≠z    ⍝ increment each path which moved to a parent
+			z
+		}⍣≡p
+		d
+	}
+
+	⍝ all nodes which are a child of a node in n
+	Children←{p n←⍺⍵
+		⍸p∊n
+	}
+
+	⍝ indices of leaf nodes
+	Leaves←{p←⍵
+		p~⍨⍳≢p
+	}
+
+	DepthToPathMatrix←{d←⍵
+		⌈\⌈⍀(⍳≢d)@(d,¨⍳≢d)⊢(1+⌈/d)(≢d)⍴0
+	}
+
+	⍝ shortest distance between two nodes
+	DistanceMatrix←{d←⍵
+		0⌈(∘.+⍨d)-2×¯1+(⍉+.=⊢) DepthToPathMatrix d
+		⍝ │     │   └────────┴─length of common prefix
+		⍝ └─────┴──────────────distance passing through root
+	}
+
+	Roots←{p←⍵
+		I⍣≡⍨p
+	}
+
+	ParentFromDepth←{d←⍵
+		⍝ 0⌈¯1++/∨\((⊢∘.>⌽)d)∧(⊢∘.>⌽)⍳≢d    ⍝ quadratic :(
+		p←⍳≢d
+		_←2{p[⍵]←⍺[⍺⍸⍵]}/⊂⍤⊢⌸d
+		p
+	}
+
+	_traverse←{p←⍵
+		I@⍺⍺⍣≡⍨p
+	}
+
+	NearestLexicalContour←{t p←⍺⍵
+		{t[⍵]≠3}_traverse p
+	}
+
+	Lift←{(p t k n r)←⍵
+		p,←n[i]←(≢p)+⍳≢i←⍸(t=3)∧p≠⍳≢p
+	⍝   │ ││          │└────────────┴─ nodes to be lifted
+	⍝   │ │└──────────┴─────────────── set pointers
+	⍝   └─┴─────────────────────────── append new nodes
+		t k n r,←3 1 0(r[i])⍴⍨¨≢i    ⍝ data for new nodes
+		p r I⍨←⊂n[i]@i⊢⍳≢p           ⍝ adjust pointers to point to new nodes
+		t k (⊣@i⍨)←10 1              ⍝ old nodes are now redirect nodes
+		p t k n r
+	}
+
+	Forest←{ps←⍵
+		⊃,/ps++\¯1↓0,≢¨ps
+	}
+
+	Deforest←{p←⍵
+		(I⍣≡⍨{⊂⍵-⍵I⍨+\~p∊⍵}⌸⊢)p
+	}
+
+	Snip←{i p←⍺⍵
+		i@i⊢p
+	}
+
+	WrapExpressions←{p t k n r←⍵
+		i←(⍸(~t∊3 4)∧t[p]=3),{⍵⌿⍨2|⍳≢⍵}⍸t[p]=4
+		⍝  │              │  └───────────────┴─── guard consequents
+		⍝  └──────────────┴────────────────────── other returning expressions
+		p t k n r/⍨←⊂m←2@i⊢1⍴⍨≢p                ⍝ double nodes to be wrapped
+		p r i I⍨←⊂j←¯1++\m                      ⍝ fix pointers in p r i
+		n←j I@(0≤⊢)n                            ⍝ fix pointers in n (only the +ve elements)
+		p[i]←j←i-1                              ⍝ point to wrappers
+		k[j]←-(k[r[j]]=0)∨0@({⊃⌽⍵}⌸p[j])⊢t[j]=1
+		⍝    │ │       │  └───────────────────┴── non-final binding nodes
+		⍝    │ └───────┴───────────────────────── top level nodes
+		⍝    └─────────────────────────────────── ¯1 when not a return node, else 0
+		t[j]←2                                  ⍝ expression type
+		p t k n r
+	}
+
+	⍝ [3,4,5,1,2,null,null,null,null,0]
+	⍝ [1,2,3,null,5,null,4]
+	⍝ [1,2,3,null,5,null,6,7,null,null,8,9,10]
+	FromLeet←{s←⍵
+		d s←1(↑,⍥⊂↓)','(≠⊆⊢)s/⍨~s∊'[] '
+		⍝   │      ││      │└─────────┴─── get rid of extra characters
+		⍝   │      │└──────┴────────────── split on ,s
+		⍝   └──────┴────────────────────── grab first element for data of root
+		p←,0                             ⍝ root node self loop
+		q←,0                             ⍝ initial frontier is only root node
+		_←{
+			s,←(⊂'null')⍴⍨0⌈(2×≢q)-≢s    ⍝ add extra 'null's at the end if need be
+			cd←⍬
+			cd s⊢←s(↑,⍥⊂↓)⍨2×≢q          ⍝ grab data for children
+			m←'null'∘≢¨cd                ⍝ mask of real children
+			i←(≢p)+⍳+/m                  ⍝ new ids of children
+			p,←m/2/q                     ⍝ parents of children
+			d,←m/cd                      ⍝ data of children
+			q⊢←i                         ⍝ new children are the next frontier 
+			0=≢s                         ⍝ stop if we are out of data
+		}⍣⊣⍬
+		p d
+	}
+
+:EndNamespace
