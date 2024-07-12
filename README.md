@@ -1,4 +1,4 @@
-# Some Maths in Dyalog APL
+# How to do some things in Dyalog APL
 
 [Read the book here](https://asherbhs.github.io/apl-maths/intro.html)
 
@@ -22,8 +22,6 @@
 
 ## TODO
 
-- [x] setup jupyter book
-- [x] get working with dyalog kernel
 - [ ] enumerative combinatorics
     - [x] implementation of the whole twelvefold way
     - [ ] write
@@ -33,4 +31,5 @@
             - [ ] counting functions
         - [ ] twelvefold
         - [ ] catalan
-- [ ] graph theory
+- [ ] trees
+- [ ] graphs
