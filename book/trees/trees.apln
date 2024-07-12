@@ -93,22 +93,9 @@
 		(⍸m)(⊢-1+⍸)(~m)/p
 	}
 
-	⍝ depth of each node of a tree
-	Depth←{p←⍵
-		d←p≠⍳≢p       ⍝ initial depth vector, 1 if not already a self-loop
-		              ⍝ could also start with d←0⍴⍨⍳≢p and seed the loop with ⍳≢p
-		              ⍝ but this saves us an interation
-		_←{
-			z←p[⍵]    ⍝ get parents of current set
-			d+←⍵≠z    ⍝ increment each path which moved to a parent
-			z
-		}⍣≡p
-		d
-	}
-
 	⍝ all nodes which are a child of a node in n
-	Children←{p n←⍺⍵
-		⍸p∊n
+	Children←{p i←⍺⍵
+		⍸p∊i
 	}
 
 	⍝ indices of leaf nodes
@@ -188,8 +175,8 @@
 	⍝ [3,4,5,1,2,null,null,null,null,0]
 	⍝ [1,2,3,null,5,null,4]
 	⍝ [1,2,3,null,5,null,6,7,null,null,8,9,10]
-	FromLeet←{s←⍵
-		l s←1(↑,⍥⊂↓)','(≠⊆⊢)s/⍨~s∊'[] '
+	Leet←{s←⍵
+		v s←1(↑,⍥⊂↓)','(≠⊆⊢)s/⍨~s∊'[] '
 		⍝   │      ││      │└─────────┴─── get rid of extra characters
 		⍝   │      │└──────┴────────────── split on ,s
 		⍝   └──────┴────────────────────── grab first element for data of root
@@ -197,27 +184,27 @@
 		q←,0                             ⍝ initial frontier is only root node
 		_←{
 			s,←(⊂'null')⍴⍨0⌈(2×≢q)-≢s    ⍝ the format allows you to omit trailing nulls, so we add them back
-			cl←⍬
-			cl s⊢←s(↑,⍥⊂↓)⍨2×≢q          ⍝ grab data for children
-			m←'null'∘≢¨cl                ⍝ mask of real children
+			cv←⍬
+			cv s⊢←s(↑,⍥⊂↓)⍨2×≢q          ⍝ grab data for children
+			m←'null'∘≢¨cv                ⍝ mask of real children
 			i←(≢p)+⍳+/m                  ⍝ new ids of children
 			p,←m/2/q                     ⍝ parents of children
-			l,←m/cl                      ⍝ data of children
+			v,←m/cv                      ⍝ data of children
 			q⊢←i                         ⍝ new children are the next frontier 
 			0=≢s                         ⍝ stop if we are out of data
 		}⍣⊣⍬
-		p l
+		p v
 	}
 
 	⍝ note: not guaranteed DFPT!!
-	Depths←{p←⍵
+	D←{p←⍵
 		d←p≠⍳≢p
 		_←{q⊣d+←⍵≠q←p[⍵]}⍣≡p
 		d
 	}
 
-	Lispify←{p←⍵
-		d←Depths p
+	Lisp←{p←⍵
+		d←D p
 		r←,¨⍳≢p                        ⍝ seeded value
 
 		_←{p[i]{(⍺⊃r),←⍵}⌸r[i←⍸d=⍵]}¨⌽1+⍳⌈/d
@@ -243,26 +230,26 @@
 	⍝	└──────┴  return roots only
 	}
 
-	ToGraphviz←{⍺←⍳≢⍵ ⋄ l p←⍺⍵
+	GV←{⍺←⍳≢⍵ ⋄ v p←⍺⍵
 		nl←⎕UCS 10
-		d←Depths p
+		d←D p
 		r←''⍨¨p
 		h ←'digraph {',nl
 		h,←'    rankdir="BT"',nl
 		_←{
 			i←⍸d=⍵
-			fl←⍕¨l[i]
-			h,←(⊢↑⍨(2≤≢i)×≢)'    {rank="same" ',(¯4↓⊃,/'"',¨fl,¨⊂'" -> '),' [style="invis"]}',nl
+			fv←⍕¨v[i]
+			h,←(⊢↑⍨(2≤≢i)×≢)'    {rank="same" ',(¯4↓⊃,/'"',¨fv,¨⊂'" -> '),' [style="invis"]}',nl
 			⍝└─────────────┴ like h,⍣(2≤≢i)← but it works, ((2≤≢i)⊃,\⍤,⍥⊂)← another option
-			r[p[i]],⍨←r[i],¨(⊂'    "'),¨fl,¨(⊂'" -> "'),¨(⍕¨l[p[i]]),¨(⊂'"',nl)
+			r[p[i]],⍨←r[i],¨(⊂'    "'),¨fv,¨(⊂'" -> "'),¨(⍕¨v[p[i]]),¨(⊂'"',nl)
 			⍬
 		}¨⌽1+⍳⌈/d
 		(h,⊢,'}'⍨)⊃,/r/⍨p=⍳≢p
 	}
 
-	PP←{⍺←'∘' ⋄ l p←⍺⍵
-		d←Depths p
-		r←(≢p)⍴⍉⍤⍪⍤⍕¨l
+	PP←{⍺←'∘' ⋄ v p←⍺⍵
+		d←D p
+		r←(≢p)⍴⍉⍤⍪⍤⍕¨v
 		_←{
 			i←⍸d=⍵
 			_←p[i]{
@@ -290,6 +277,44 @@
 			⍬
 		}¨⌽1+⍳⌈/d
 		r/⍨p=⍳≢p
+	}
+
+	Collatz←{d←⍵
+		p←0 0 1 2
+		v←1 2 4 8
+		q←,3
+		_←{
+			m←4=6|v[q]
+			i←(≢p)+⍳(≢q)++/m
+			v,←(2×v[q]),3÷⍨v[m/q]-1
+			p,←q,m/q
+			q⊢←i
+			⍬
+		}⍣(d-3)⊢⍬
+		p v
+	}
+
+	Nary←{⍺←3 ⋄ d n←⍺⍵
+		p←,0
+		q←,0
+		_←{
+			i←(≢p)+⍳n×≢q
+			p,←n/q
+			q⊢←i
+			⍬
+		}⍣d⊢⍬
+		p
+	}
+
+	Mary←{⍺←3 ⋄ d n←⍺⍵
+		0,n/⍳(1-n*d)÷1-n
+	⍝	0,n/⍳+/×\1,d⍴n    ⍝ shorter but slower, closed forms go brrr
+	}
+
+	Sum←{⍺←⍳≢⍵ ⋄ v p←⍺⍵
+		d←D p
+		_←{v[p[i]]+←v[i←⍸d=⍵]}¨⌽1+⍳⌈/d
+		v/⍨p=⍳≢p
 	}
 
 :EndNamespace

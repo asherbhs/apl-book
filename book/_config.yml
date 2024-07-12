@@ -1,7 +1,7 @@
 # Book settings
 # Learn more at https://jupyterbook.org/customize/config.html
 
-title:  Some Mathematics in Dyalog APL
+title:  Doing Things in Dyalog APL
 author: Asher Harvey-Smith
 logo:   logo.png
 

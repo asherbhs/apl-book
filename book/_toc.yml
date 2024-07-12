@@ -15,7 +15,10 @@ parts:
       - file: combinatorics/integer-partitions
     - file: combinatorics/twelvefold
     - file: combinatorics/catalan
-  - caption: Graph Theory
+  - caption: Trees
     chapters:
-    - file: graph-theory/graph-theory
+    - file: trees/trees
+  - caption: Graphs
+    chapters:
+    - file: graphs/graphs
 
