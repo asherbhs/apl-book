@@ -37,9 +37,22 @@
 
 	⍝ pp3 :: [Labels] (draw pp3) Parent -> Tree_Diagram
 	⍝ Pretty print a tree given node labels and a parent vector using draw
-	pp3←{⍺←'○' ⋄ d←(⍳≢p)≠p←⍵ ⋄ _←⍵{z⊣d+←⍵≠z←⍺[⍵]}⍣≡⍵
-	 lyr←{i←⍸⍺=d ⋄ k v←↓⍉p[i],∘⊂⌸i ⋄ (⍵∘{⍺[⍵]}¨v)⍺⍺¨@k⊢⍵}
-	 (p=⍳≢p)⌿⊃⍺⍺ lyr⌿(1+⍳⌈/d),⊂⍉∘⍪∘⍕¨(≢⍵)⍴⍺}
+	pp3←{⍺←'○' ⋄ l p←⍺⍵ ⋄ F←⍺⍺
+		⍝ calculate depths
+		d←(⍳≢p)≠p←⍵
+		_←{z⊣d+←⍵≠z←p[⍵]}⍣≡p
+
+		G←{
+			i←⍸⍺=d             ⍝ nodes on this layer
+			k v←↓⍉p[i],∘⊂⌸i    ⍝ parents and children
+			(⍵∘I¨v)F¨@k⊢⍵      ⍝ attach children to parents
+		}
+		(p=⍳≢p)/(1+⍳⌈/d)((⊃G/),∘⊂)⍉⍤⍪⍤⍕¨(≢p)⍴l
+	⍝	│      │ │    │  │      │ └──────────┴ rendered subtrees (initially just labels) (accumulated)
+	⍝	│      │ └────┴──┼──────┼───────────── depths
+	⍝	│      │         └──────┴───────────── connect children bottom-up
+	⍝	└──────┴────────────────────────────── values at roots only
+	}
 
 	⍝ test data
 
@@ -135,9 +148,9 @@
 
 	Lift←{(p t k n r)←⍵
 		p,←n[i]←(≢p)+⍳≢i←⍸(t=3)∧p≠⍳≢p
-	⍝   │ ││          │└────────────┴─ nodes to be lifted
-	⍝   │ │└──────────┴─────────────── set pointers
-	⍝   └─┴─────────────────────────── append new nodes
+	⍝	│ ││          │└────────────┴─ nodes to be lifted
+	⍝	│ │└──────────┴─────────────── set pointers
+	⍝	└─┴─────────────────────────── append new nodes
 		t k n r,←3 1 0(r[i])⍴⍨¨≢i    ⍝ data for new nodes
 		p r I⍨←⊂n[i]@i⊢⍳≢p           ⍝ adjust pointers to point to new nodes
 		t k (⊣@i⍨)←10 1              ⍝ old nodes are now redirect nodes
@@ -176,24 +189,107 @@
 	⍝ [1,2,3,null,5,null,4]
 	⍝ [1,2,3,null,5,null,6,7,null,null,8,9,10]
 	FromLeet←{s←⍵
-		d s←1(↑,⍥⊂↓)','(≠⊆⊢)s/⍨~s∊'[] '
+		l s←1(↑,⍥⊂↓)','(≠⊆⊢)s/⍨~s∊'[] '
 		⍝   │      ││      │└─────────┴─── get rid of extra characters
 		⍝   │      │└──────┴────────────── split on ,s
 		⍝   └──────┴────────────────────── grab first element for data of root
 		p←,0                             ⍝ root node self loop
 		q←,0                             ⍝ initial frontier is only root node
 		_←{
-			s,←(⊂'null')⍴⍨0⌈(2×≢q)-≢s    ⍝ add extra 'null's at the end if need be
-			cd←⍬
-			cd s⊢←s(↑,⍥⊂↓)⍨2×≢q          ⍝ grab data for children
-			m←'null'∘≢¨cd                ⍝ mask of real children
+			s,←(⊂'null')⍴⍨0⌈(2×≢q)-≢s    ⍝ the format allows you to omit trailing nulls, so we add them back
+			cl←⍬
+			cl s⊢←s(↑,⍥⊂↓)⍨2×≢q          ⍝ grab data for children
+			m←'null'∘≢¨cl                ⍝ mask of real children
 			i←(≢p)+⍳+/m                  ⍝ new ids of children
 			p,←m/2/q                     ⍝ parents of children
-			d,←m/cd                      ⍝ data of children
+			l,←m/cl                      ⍝ data of children
 			q⊢←i                         ⍝ new children are the next frontier 
 			0=≢s                         ⍝ stop if we are out of data
 		}⍣⊣⍬
-		p d
+		p l
+	}
+
+	⍝ note: not guaranteed DFPT!!
+	Depths←{p←⍵
+		d←p≠⍳≢p
+		_←{q⊣d+←⍵≠q←p[⍵]}⍣≡p
+		d
+	}
+
+	Lispify←{p←⍵
+		d←Depths p
+		r←,¨⍳≢p                        ⍝ seeded value
+
+		_←{p[i]{(⍺⊃r),←⍵}⌸r[i←⍸d=⍵]}¨⌽1+⍳⌈/d
+		⍝  │  │ │      │  │ │    │  └──────┴ for each non-root layer, starting from the bottom
+		⍝  │  │ │      │  │ └────┴────────── nodes at this depth
+		⍝  └──┴─┼──────┼──┴───────────────── group child results by parent id
+		⍝       └──────┴──────────────────── append child results to result of parent
+
+		⍝ _←{r[p[i]],←⊂¨r[i←⍸d=⍵]}¨⌽1+⍳⌈/d
+		⍝ ⍝  │         │  │    │  └──────┴ for each non-root layer, starting from the bottom
+		⍝ ⍝  │         │  └────┴────────── nodes at this depth
+		⍝ ⍝  └─────────┴────────────────── append lispification to result of parent
+
+		r/⍨p=⍳≢p                       ⍝ return values at roots only
+
+		⍝ if you're so inclined
+	⍝	(p=⍳≢p)/⊃{l@(⊃¨l)⊢⍵⊣l←p[i](,/,∘(⊂¨)⍥(⍵∘I))⌸i←⍸d=⍺}/(1+⍳⌈/d),⊂,¨⍳≢p
+	⍝	│      │  │       │   │  │ │            │ ││    │ └──────────────┴ fold over depths with accumulator of labels
+	⍝	│      │  │       │   │  │ │            │ │└────┴ nodes at this depth
+	⍝	│      │  │       │   └──┴─┼────────────┼─┴ group by parent
+	⍝	│      │  │       │        └────────────┴ join labels of children and parent lispily
+	⍝	│      │  └───────┴ put each label in place and pass on
+	⍝	└──────┴  return roots only
+	}
+
+	ToGraphviz←{⍺←⍳≢⍵ ⋄ l p←⍺⍵
+		nl←⎕UCS 10
+		d←Depths p
+		r←''⍨¨p
+		h ←'digraph {',nl
+		h,←'    rankdir="BT"',nl
+		_←{
+			i←⍸d=⍵
+			fl←⍕¨l[i]
+			h,←(⊢↑⍨(2≤≢i)×≢)'    {rank="same" ',(¯4↓⊃,/'"',¨fl,¨⊂'" -> '),' [style="invis"]}',nl
+			⍝└─────────────┴ like h,⍣(2≤≢i)← but it works, ((2≤≢i)⊃,\⍤,⍥⊂)← another option
+			r[p[i]],⍨←r[i],¨(⊂'    "'),¨fl,¨(⊂'" -> "'),¨(⍕¨l[p[i]]),¨(⊂'"',nl)
+			⍬
+		}¨⌽1+⍳⌈/d
+		(h,⊢,'}'⍨)⊃,/r/⍨p=⍳≢p
+	}
+
+	PP←{⍺←'∘' ⋄ l p←⍺⍵
+		d←Depths p
+		r←(≢p)⍴⍉⍤⍪⍤⍕¨l
+		_←{
+			i←⍸d=⍵
+			_←p[i]{
+				ws←(1⊃⍴)¨⍵
+				w←¯1++/1+ws
+				cs←(+\0,¯1↓1+ws)+¯1+⌈2÷⍨ws
+				b←w⍴' '
+				b[(⊢⊢⍤/⍨((⊃⌽cs)>⊢)∧(⊃cs)<⊢)⍳w]←'─'
+				b[   ⊃ cs]←'┌'
+				b[   ⊃⌽cs]←'┐'
+				b[¯1↓1↓cs]←'┬'
+				b[(1=≢cs)⍴⊃cs]←'│'
+				c←¯1+⌈2÷⍨w
+				b[c]←'┴├┼┤│'['─┌┬┐│'⍳b[c]]
+				t←b⍪¯1↓⍤1⊃,/,∘' '¨((⌈/≢¨)↑¨⊢)⍵
+				rp←⍺⊃r
+				ww←1⊃⍴rp
+				cc←¯1+⌈2÷⍨ww
+				t ←((c-cc)⌽ww↑⍤1⊢)⍣(w<ww)⊢t
+				rp←((cc-c)⌽ w↑⍤1⊢)⍣(w>ww)⊢rp
+				t⍪⍨←rp
+				r[⍺]←⊂t
+				⍬
+			}⌸r[i]
+			⍬
+		}¨⌽1+⍳⌈/d
+		r/⍨p=⍳≢p
 	}
 
 :EndNamespace
