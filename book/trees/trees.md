@@ -43,13 +43,20 @@ kernelspec:
         - using key
         - without using key
         - using a fold
-    - GV as an example
+    - GV as an example?
     - PP as another example, copy and use me
-    - exercise
+    - exercises
         - sum each tree in a forest
-        - sanity check: sum of trees should equal sum of all values
+            - sanity check: sum of trees should equal sum of all values
+            - bonus: find `(I⍣≡⍨p)+/⍤⊢⌸v`
+        - find height of every node in a tree
 - top-down construction
     - Nary
         - challenge: find Mary
     - Collatz
     - Leet as an example
+- leetcode problems
+    - [invert](https://leetcode.com/problems/invert-binary-tree/)
+    - [max depth](https://leetcode.com/problems/maximum-depth-of-binary-tree/)
+    - [diameter](https://leetcode.com/problems/diameter-of-binary-tree/) - find a nice way to construct path matrix from parent vector
+    - [height balanced](https://leetcode.com/problems/balanced-binary-tree/)

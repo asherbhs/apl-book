@@ -1,8 +1,19 @@
 :Namespace trees
+	⍝ ┌─┬┐
+	⍝ │ ││
+	⍝ ├─┼┤
+	⍝ └─┴┘
+
 	⎕IO←0
 
 	⍝ ⌷⍨∘⊂⍨ (select) uses opposite argument order
 	I←{(⊂⍵)⌷⍺}    ⍝ approximately {⍵[⍺]}
+
+	⍝ 
+	CaLa←{
+		⍺≠⍥(≢⍤⍴)⍵: ⍺⍪⍵
+		⍺,[⎕IO-.5]⍵
+	}
 
 	∇ v←(f _qscan) x
 		v←⍬
@@ -15,7 +26,7 @@
 		}⍣≡x
 	∇
 
-	⍝ drawing functions (thank you aaron)
+	⍝ aaron's drawing functions
 
 	⍝ dct :: Connectors (Get dlk Join) Formatted_Children
 	⍝ -> Connected_Children
@@ -49,7 +60,7 @@
 		}
 		(p=⍳≢p)/(1+⍳⌈/d)((⊃G/),∘⊂)⍉⍤⍪⍤⍕¨(≢p)⍴l
 	⍝	│      │ │    │  │      │ └──────────┴ rendered subtrees (initially just labels) (accumulated)
-	⍝	│      │ └────┴──┼──────┼───────────── depths
+	⍝	│      │ └────┴──│──────│───────────── depths
 	⍝	│      │         └──────┴───────────── connect children bottom-up
 	⍝	└──────┴────────────────────────────── values at roots only
 	}
@@ -57,6 +68,8 @@
 	⍝ test data
 
 	N∆←'ABEFGLMNOPVZ'
+	⍝   012345678911
+	⍝             01
 
 	p1←0 0 1 0 3 4 3 0 7 8 8 7 11 11 7
 	d2←0 1 2 1 2 3 2 1 2 3 3 2 3 3 2
@@ -79,12 +92,37 @@
 	n4←0 ¯5 0 0 0 ¯2 0 0 0 ¯2 ¯6 0 ¯1 0 0 ¯2 0 0 0 ¯2 ¯6 0 ¯1 0 0 ¯2 0 0 0 ¯2 ¯6 0 ¯1 0 ¯1
 	r4←0 0 0 2 2 2 2 6 6 6 6 6 6 2 2 2 2 16 16 16 16 16 16 2 2 2 2 26 26 26 26 26 26 2 2
 
+	⍝ wrapping expressions
 	⍝ note the digram is slightly different to the one in the thesis
 	p5←0 0 1 15 3 3 5 6 15 8 15 10 11 10 10 15
 	t5←3 1 10 4 10 1 0 7 0 7 2 0 7 9 10 3
 	k5←0 1 1 0 0 0 0 0 0 0 2 0 0 1 0 1
 	n5←0 ¯5 15 0 ¯1 ¯6 0 ¯7 0 ¯8 0 0 ¯9 ¯10 ¯1 0
 	r5←0 0 0 15 15 15 15 15 15 15 15 15 15 15 15 0
+
+	⍝ lifting guards
+	⍝ again, different to the thesis
+	p6←0 0 1 2 20 4 4 6 7 20 9 10 10 10 9 14 15 20 17 18 20
+	t6←3 2 1 10 4 10 2 0 7 4 2 10 9 10 2 0 7 2 0 7 3
+	k6←0 ¯1 1 1 0 0 0 0 0 0 2 0 1 0 0 0 0 0 0 0 1
+	n6←0 ¯5 ¯5 20 0 ¯1 0 0 0 0 0 ¯2 ¯6 ¯1 0 0 ¯7 0 0 ¯8 0
+	r6←0 0 0 0 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 0
+
+	⍝ counting indexing rank
+
+	p7←0 0 1 2 53 4 5 5 5 8 9 0 11 12 54 14 15 15 15 18 19 18 21 0 23 24 55 26 27 27 27 30 31 30 33 30 35 0 37 38 56 40 41 41 41 44 45 44 47 44 49 44 51 53 54 55 56
+	t7←3 2 1 10 2 2 10 9 2 0 9 2 1 10 2 2 10 9 2 0 9 0 9 2 1 10 2 2 10 9 2 0 9 0 9 0 9 2 1 10 2 2 10 9 2 0 9 0 9 0 9 0 9 3 3 3 3
+	k7←0 ¯1 1 1 0 2 0 1 3 3 0 ¯1 1 1 0 2 0 1 3 3 0 3 0 ¯1 1 1 0 2 0 1 3 3 0 3 0 3 0 ¯1 1 1 0 2 0 1 3 3 0 3 0 3 0 3 0 1 1 1 1
+	n7←0 ¯5 ¯5 53 0 0 ¯1 ¯6 0 0 ¯7 ¯8 ¯8 54 0 0 ¯1 ¯6 0 0 ¯7 0 ¯7 ¯9 ¯9 55 0 0 ¯1 ¯6 0 0 ¯7 0 ¯7 0 ¯7 ¯10 ¯10 56 0 0 ¯1 ¯6 0 0 ¯7 0 ¯7 0 ¯7 0 ¯7 0 0 0 0
+	r7←0 0 0 0 53 53 53 53 53 53 53 0 0 0 54 54 54 54 54 54 54 54 54 0 0 0 55 55 55 55 55 55 55 55 55 55 55 0 0 0 56 56 56 56 56 56 56 56 56 56 56 56 56 0 0 0 0
+
+	⍝ flattening expressions
+
+	p8←0 0 1 2 24 4 5 6 6 6 24 10 11 12 13 13 12 16 16 16 19 11 11 22 24
+	t8←3 2 1 10 2 1 2 10 9 10 2 2 2 8 9 9 2 10 9 0 7 9 0 7 3
+	k8←0 ¯1 1 1 ¯1 0 2 0 1 0 0 2 1 2 2 1 2 0 1 0 0 1 0 0 1
+	n8←0 ¯5 ¯5 24 ¯6 ¯6 0 ¯2 ¯7 ¯1 0 0 0 0 ¯8 ¯9 0 ¯6 ¯10 0 ¯11 ¯10 0 ¯12 0
+	r8←0 0 0 0 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 24 0
 
 	⍝ how to do stuff
 
@@ -144,6 +182,8 @@
 		p t k n r
 	}
 
+	⍝ joins trees in order, fixing parents
+	⍝ associated data can be ,/ together and it will match up just fine
 	Forest←{ps←⍵
 		⊃,/ps++\¯1↓0,≢¨ps
 	}
@@ -210,7 +250,7 @@
 		_←{p[i]{(⍺⊃r),←⍵}⌸r[i←⍸d=⍵]}¨⌽1+⍳⌈/d
 		⍝  │  │ │      │  │ │    │  └──────┴ for each non-root layer, starting from the bottom
 		⍝  │  │ │      │  │ └────┴────────── nodes at this depth
-		⍝  └──┴─┼──────┼──┴───────────────── group child results by parent id
+		⍝  └──┴─│──────│──┴───────────────── group child results by parent id
 		⍝       └──────┴──────────────────── append child results to result of parent
 
 		⍝ _←{r[p[i]],←⊂¨r[i←⍸d=⍵]}¨⌽1+⍳⌈/d
@@ -224,10 +264,10 @@
 	⍝	(p=⍳≢p)/⊃{l@(⊃¨l)⊢⍵⊣l←p[i](,/,∘(⊂¨)⍥(⍵∘I))⌸i←⍸d=⍺}/(1+⍳⌈/d),⊂,¨⍳≢p
 	⍝	│      │  │       │   │  │ │            │ ││    │ └──────────────┴ fold over depths with accumulator of labels
 	⍝	│      │  │       │   │  │ │            │ │└────┴ nodes at this depth
-	⍝	│      │  │       │   └──┴─┼────────────┼─┴ group by parent
+	⍝	│      │  │       │   └──┴─│────────────│─┴ group by parent
 	⍝	│      │  │       │        └────────────┴ join labels of children and parent lispily
 	⍝	│      │  └───────┴ put each label in place and pass on
-	⍝	└──────┴  return roots only
+	⍝	└──────┴─ return roots only
 	}
 
 	GV←{⍺←⍳≢⍵ ⋄ v p←⍺⍵
@@ -247,9 +287,20 @@
 		(h,⊢,'}'⍨)⊃,/r/⍨p=⍳≢p
 	}
 
+	⍝ TBD
+	GVV←{⍺←⍳≢⍵ ⋄ p←⍵
+		v←⍕¨⍺
+		nl←⎕UCS 10
+		h ←'digraph {',nl
+		h,←'    rank="same"',nl
+		h,←(¯4↓⊃,/v,¨⊂' -> '),'[style="invis"]',nl
+	}
+
 	PP←{⍺←'∘' ⋄ v p←⍺⍵
 		d←D p
 		r←(≢p)⍴⍉⍤⍪⍤⍕¨v
+		md←⌈/d
+		md=0: r    ⍝ avoid the each running on the prototype
 		_←{
 			i←⍸d=⍵
 			_←p[i]{
@@ -275,13 +326,14 @@
 				⍬
 			}⌸r[i]
 			⍬
-		}¨⌽1+⍳⌈/d
+		}¨⌽1+⍳md
 		r/⍨p=⍳≢p
 	}
 
 	Collatz←{d←⍵
 		p←0 0 1 2
 		v←1 2 4 8
+		d<3: p v↑¨⍨d+1
 		q←,3
 		_←{
 			m←4=6|v[q]
@@ -313,8 +365,95 @@
 
 	Sum←{⍺←⍳≢⍵ ⋄ v p←⍺⍵
 		d←D p
+		md←⌈/d
+		md=0: v
 		_←{v[p[i]]+←v[i←⍸d=⍵]}¨⌽1+⍳⌈/d
 		v/⍨p=⍳≢p
+	}
+
+	Sum2←{⍺←⍳≢⍵ ⋄ v p←⍺⍵
+		(I⍣≡⍨p)+/⍤⊢⌸v
+	}
+
+	LiftGuardTests←{p t k n r←⍵
+		i←{⍵/⍨~2|⍳≢⍵}⍸t[p]=4
+		⍝ │         │└─────┴─────── two children of each guard node
+		⍝ └─────────┴────────────── only the first of each pair - the test expressions
+		x←p[i]                    ⍝ the guard nodes
+		p[i]←p[x]                 ⍝ make test expressions siblings of guards
+		t[i,x]←t[x,i]             ⍝ swap types
+		k[i,x]←k[x,i]             ⍝ swap kinds
+		n[x]←n[i]                 ⍝ swap data
+		p←((x,i)@(i,x)⊢⍳≢p)[p]    ⍝ swap children
+		p t k n r
+	}
+
+	CountIndexRank←{p t k n r←⍵
+		n[p⌿⍨(t[p]=2)∧k[p]=3]+←1
+	⍝	│ │ │└─────────────┴─│─│─ mask of children of indexing nodes
+	⍝	│ └─┴────────────────│─│─ parents repeated as many times as they have children
+	⍝	└────────────────────┴─┴─ increment n that many times
+		p t k n r
+	}
+
+	CountChildren←{p←⍵
+		(⍳≢p)((+/∘.=)-=)p
+	}
+
+	Dbg←{p t←⍵
+		('(',¨')',⍨¨(⍕¨⍳≢t),¨N∆[t]) PP p
+	}
+
+	FlattenExpression←{p t k n r←⍵
+		i←⍸t∊4 0 1 2 8 9 10        ⍝ nodes to be lifted: Guard, Atomic, Bind, Expr, Oper, Prim, Var
+		x←p I@{~t[p[⍵]]∊3 4}⍣≡i    ⍝ nodes at the level to be lifted to
+		p[i]←p[x]                  ⍝ reparent nodes
+		j←(⌽i)[⍋⌽x]                ⍝ permuted i which reverses nodes within a statement
+		⍝  └┴─│───│───────────────── reverse nodes
+		⍝     └───┴───────────────── sort by containing statement
+		p[i]←p[j]
+		t[i]←t[j]
+		k[i]←k[j]
+		n[i]←n[j]
+		r[i]←r[j]
+		p←(j@i⊢⍳≢p)[p]             ⍝ each node pointing to an i must now point to the corresponding j
+		p t k n r
+	}
+
+	⍝ any associated vectors can just be ⌽ed
+	Invert←{p←⍵
+		(¯1+≢-⌽)p    ⍝ equivalent to (⌽⍳≢p)[⌽p] but quicker
+		⍝│   │└─────── reverse order of siblings
+		⍝└───┴──────── recompute parents
+	}
+
+	Height←{p←⍵
+		r←0⍴⍨≢p
+		d←D p
+		md←⌈/d
+		md=0: r
+		_←{p[i]{r[⍺]←1+⌈/r[⍵]}⌸i←⍸d=⍵}¨⌽1+⍳md
+		r
+	}
+
+	HeightBalanced←{p←⍵
+		∧/p{1≥(⌈/-⌊/)⍵}⌸Height p
+	}
+
+	⍝ slooooow, just for demo trees
+	Factorisation←{n←⍵
+		p←,0
+		v←,n
+		pr←(⊢~∘.×⍨)2↓⍳1+n
+		n∊pr: p v
+		_←{
+			p,←2⍴¯1+≢p
+			f←⊃pr/⍨0=pr|n
+			n÷←f
+			v,←f n
+			n∊pr
+		}⍣⊣⍬
+		p v
 	}
 
 :EndNamespace
