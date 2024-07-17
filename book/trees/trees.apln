@@ -1,9 +1,4 @@
 :Namespace trees
-	⍝ ┌─┬┐
-	⍝ │ ││
-	⍝ ├─┼┤
-	⍝ └─┴┘
-
 	⎕IO←0
 
 	⍝ ⌷⍨∘⊂⍨ (select) uses opposite argument order
@@ -126,11 +121,6 @@
 
 	⍝ how to do stuff
 
-	⍝ delete leaf nodes given by mask m from parent vector p
-	Delete←{(m p)←⍺⍵
-		(⍸m)(⊢-1+⍸)(~m)/p
-	}
-
 	⍝ all nodes which are a child of a node in n
 	Children←{p i←⍺⍵
 		⍸p∊i
@@ -156,10 +146,14 @@
 		I⍣≡⍨p
 	}
 
-	ParentFromDepth←{d←⍵
+	D2P←{d←⍵
 		⍝ 0⌈¯1++/∨\((⊢∘.>⌽)d)∧(⊢∘.>⌽)⍳≢d    ⍝ quadratic :(
 		p←⍳≢d
 		_←2{p[⍵]←⍺[⍺⍸⍵]}/⊂⍤⊢⌸d
+		⍝ │ │   ││    │ │└───┴─── indices of each level
+		⍝ └─│───││────│─┴──────── pairwise between levels
+		⍝   │   │└────┴────────── most recent node at previous level - the parent
+		⍝   └───┴──────────────── make this the parent
 		p
 	}
 
@@ -237,14 +231,14 @@
 	}
 
 	⍝ note: not guaranteed DFPT!!
-	D←{p←⍵
+	Depth←{p←⍵
 		d←p≠⍳≢p
 		_←{q⊣d+←⍵≠q←p[⍵]}⍣≡p
 		d
 	}
 
 	Lisp←{p←⍵
-		d←D p
+		d←Depth p
 		r←,¨⍳≢p                        ⍝ seeded value
 
 		_←{p[i]{(⍺⊃r),←⍵}⌸r[i←⍸d=⍵]}¨⌽1+⍳⌈/d
@@ -270,34 +264,66 @@
 	⍝	└──────┴─ return roots only
 	}
 
-	GV←{⍺←⍳≢⍵ ⋄ v p←⍺⍵
-		nl←⎕UCS 10
-		d←D p
-		r←''⍨¨p
-		h ←'digraph {',nl
-		h,←'    rankdir="BT"',nl
+	gvStyle←⍬
+	gvStyle,←⊂'    graph ['
+	gvStyle,←⊂'        bgcolor = black'
+	gvStyle,←⊂'        pad     = 2'
+	gvStyle,←⊂'    ]'
+	gvStyle,←⊂'    node ['
+	gvStyle,←⊂'        style     = filled'
+	gvStyle,←⊂'        shape     = circle'
+	gvStyle,←⊂'        color     = white'
+	gvStyle,←⊂'        fillcolor = gray10'
+	gvStyle,←⊂'        fontcolor = white'
+	gvStyle,←⊂'        fontname  = BQN386'
+	gvStyle,←⊂'        penwidth  = 2.5'
+	gvStyle,←⊂'    ]'
+	gvStyle,←⊂'    edge ['
+	gvStyle,←⊂'        color    = white'
+	gvStyle,←⊂'        penwidth = 2.5'
+	gvStyle,←⊂'    ]'
+
+	⍝ p v←Collatz 10
+	⍝ (⊂v GV p)⎕NPUT'tree.gv'1
+	⍝ ⎕SH 'dot -Tpng tree.gv > tree.png'
+	⍝ ⎕SH 'dot -Tpng tree.gv | feh -B black -'
+	GV←{⍺←' ' ⋄ p←⍵ ⋄ v←⍺⍴⍨≢p
+		gv←,⊂'digraph {'
+		gv,←gvStyle
+		gv,←⊂'    rankdir = RL'
+		f←⍕¨⍳≢p
+		d←Depth p
 		_←{
 			i←⍸d=⍵
-			fv←⍕¨v[i]
-			h,←(⊢↑⍨(2≤≢i)×≢)'    {rank="same" ',(¯4↓⊃,/'"',¨fv,¨⊂'" -> '),' [style="invis"]}',nl
-			⍝└─────────────┴ like h,⍣(2≤≢i)← but it works, ((2≤≢i)⊃,\⍤,⍥⊂)← another option
-			r[p[i]],⍨←r[i],¨(⊂'    "'),¨fv,¨(⊂'" -> "'),¨(⍕¨v[p[i]]),¨(⊂'"',nl)
+			gv,←⊂'    {rank = same'
+			gv,←⊂'        ',(¯1↓⊃,/f[i],¨' ')
+			gv,←{'        ',(¯4↓⊃,/f[⍵],¨⊂' -> '),' [style = invis]'}¨(⊢⊢⍤/⍨2≤≢¨)p[i]⊂⍤⊢⌸i
+			gv,←⊂'    }'
 			⍬
 		}¨⌽1+⍳⌈/d
-		(h,⊢,'}'⍨)⊃,/r/⍨p=⍳≢p
+		gv,←'    '∘,¨f,¨' [label="'∘,¨(⍕¨v),¨⊂'"]'
+		gv,←{'    ',⍺,' -> ',⍵}/⍤1⊢f[(≠/⊢⍤⌿⊢)(⍳≢p),⍪p]
+		gv,←,⊂'}'
+		gv
 	}
 
-	⍝ TBD
-	GVV←{⍺←⍳≢⍵ ⋄ p←⍵
-		v←⍕¨⍺
-		nl←⎕UCS 10
-		h ←'digraph {',nl
-		h,←'    rank="same"',nl
-		h,←(¯4↓⊃,/v,¨⊂' -> '),'[style="invis"]',nl
+	GVV←{⍺←' ' ⋄ p←⍵ ⋄ v←⍺⍴⍨≢p
+		gv←,⊂'digraph {'
+		gv,←gvStyle
+		gv,←⊂'    rankdir=TB'
+		f←⍕¨⍳≢p
+		gv,←⊂'    {rank = same'
+		gv,←⊂'        ',¯1↓⊃,/f,¨' '
+		gv,←⊂'        ',(¯4↓⊃,/f,¨⊂' -> '),' [style = invis]'
+		gv,←⊂'    }'
+		gv,←'    '∘,¨f,¨' [label="'∘,¨(⍕¨v),¨⊂'"]'
+		gv,←{'    ',⍺,' -> ',⍵}/⍤1⊢f[(≠/⊢⍤⌿⊢)(⍳≢p),⍪p]
+		gv,←,⊂'}'
+		gv
 	}
 
 	PP←{⍺←'∘' ⋄ v p←⍺⍵
-		d←D p
+		d←Depth p
 		r←(≢p)⍴⍉⍤⍪⍤⍕¨v
 		md←⌈/d
 		md=0: r    ⍝ avoid the each running on the prototype
@@ -364,7 +390,7 @@
 	}
 
 	Sum←{⍺←⍳≢⍵ ⋄ v p←⍺⍵
-		d←D p
+		d←Depth p
 		md←⌈/d
 		md=0: v
 		_←{v[p[i]]+←v[i←⍸d=⍵]}¨⌽1+⍳⌈/d
@@ -429,7 +455,7 @@
 
 	Height←{p←⍵
 		r←0⍴⍨≢p
-		d←D p
+		d←Depth p
 		md←⌈/d
 		md=0: r
 		_←{p[i]{r[⍺]←1+⌈/r[⍵]}⌸i←⍸d=⍵}¨⌽1+⍳md
@@ -454,6 +480,77 @@
 			n∊pr
 		}⍣⊣⍬
 		p v
+	}
+
+	Delete←{x p←⍺⍵
+		m←x∊⍨p I@{~⍵∊x}⍣≡⍳≢p    ⍝ mask of nodes which are in x or a child of x
+	⍝	  │ ││          │└─┴───── every node
+	⍝	  │ │└──────────┴──────── go to parent until we hid a node in x or a self loop
+	⍝	  └─┴──────────────────── mask of those nodes which hit a node in x eventually
+		(⍸m)(⊢-1+⍸)(~m)/p
+	⍝	 ││  │││ │ └────┴──────── delete the nodes
+	⍝	 └┴──│││─│─────────────── nodes which were deleted
+	⍝	     ││└─┴─────────────── how many deleted nodes came before this parent
+	⍝	     └┴────────────────── correct parent - it is now that many indices farther back
+	}
+
+	Sc←{ ⍝ +\ on contiguous nonzero segments
+		sc←+\⍵
+		(⍵≠0)×sc-⌈\(sc-⍵)×2</0,⍵    ⍝ should be (+×0≠⊢)\⍵ but scan is actually reduction on prefixes
+	⍝	│    ││ ││││    ││└────┴───── where a segment starts
+	⍝	│    ││ │││└────┴│─────────── sum not including each
+	⍝	│    ││ │└┴──────┴─────────── sum before each segment
+	⍝	│    │└─┴──────────────────── remove that from the scan to rebase at 0
+	⍝	└────┴─────────────────────── zero out everything not in a segment
+	}
+
+	Calc←{
+		c←'()+-×÷0123456789'
+		⍝  ( ) + - × ÷ 0 1 2 3 4 5 6 7 8 9
+		cc←0 1 2 3 4 5 6 6 6 6 6 6 6 6 6 6
+		s←'(',⍵~' '
+		t←{6≠cc[c⍳x←⊃⍵]: x ⋄ 10⊥⎕D⍳⍵}¨s⊂⍨1,2(~∧⍥(6∘=))/cc[c⍳s]
+		d←0,¯1↓+\-⌿'()'∘.≡t
+		m←')'∘≢¨t
+		t/⍨←m
+		d/⍨←m
+		p←D2P d
+		_p←{
+			i←⍵~⍺
+			j←⍸⍺⍺∘≡¨t I i
+			0=≢j: ⍬
+			_←{
+				k←i[⍵]            ⍝┐              ∘   
+				p[¯1↓k]←1↓k       ⍝│              │   
+				p[i[⍵+1]]←k       ⍝│     ∘        +   
+				p[i[¯1+⊃⍵]]←⊃k    ⍝┘ ┌─┬─┼─┬─┐ → ┌┴─┐ 
+				⍬                 ⍝  a + b + c   +  c 
+			}¨j⊂⍨1,2≠2-⍨/j        ⍝             ┌┴┐   
+			⍬                     ⍝             a b
+		}
+		ip←⍳≢p
+		_←p('÷'_p⌸)ip
+		_←p('×'_p⌸)ip
+		_←p('+'_p⌸)ip
+		_←p('-'_p⌸)ip
+		m←'('∘≡¨t
+		p I⍨←p I@{m}⍳≢p
+		p[i]←i←⍸p=p[p]
+		p←(⍸m)(⊢-1+⍸)(~m)/p
+		t←(~m)/t
+		d←Depth p
+		r←t
+		_←{
+			i←⍸d=⍵
+			p[i]{
+				t[⍺]='÷': r[⍺]←÷/r[⍵]
+				t[⍺]='×': r[⍺]←×/r[⍵]
+				t[⍺]='+': r[⍺]←+/r[⍵]
+				t[⍺]='-': r[⍺]←-/r[⍵]
+			}⌸i
+			⍬
+		}¨⌽1+⍳⌈/d
+		r[⊃⍸p=⍳≢p]
 	}
 
 :EndNamespace
