@@ -35,7 +35,8 @@ kernelspec:
         - need to maintain sibling order if it matters for your operation
 - relationship to depth vector
     - construction from depth vector
-    - finding depths (not guaranteed to be dfpt order)
+    - finding depths
+    - imposing dfpt order
 - forests
     - join multiple into a forest
     - split multiple into individual (deforest)
@@ -47,7 +48,7 @@ kernelspec:
         - without using key
         - using a fold
     - PP as another example, copy and use me
-    - exercises
+    - challenges
         - sum each tree in a forest
             - sanity check: sum of trees should equal sum of all values
             - bonus: find `(I⍣≡⍨p)+/⍤⊢⌸v`
@@ -59,11 +60,11 @@ kernelspec:
     - Leet as an example
 - leetcode problems
     - [invert](https://leetcode.com/problems/invert-binary-tree/)
-    - [max depth](https://leetcode.com/problems/maximum-depth-of-binary-tree/)
-    - [diameter](https://leetcode.com/problems/diameter-of-binary-tree/) - find a nice way to construct path matrix from parent vector
     - [height balanced](https://leetcode.com/problems/balanced-binary-tree/)
+    - [leaf similar](https://leetcode.com/problems/leaf-similar-trees/)
+    - [diameter](https://leetcode.com/problems/diameter-of-binary-tree/)
+- manipulating json with matrix import ⎕json
+    - grouping astronauts example
+    - mention that ⎕xml uses a similar format
 - small calculator as a larger example
     - point to co-dfns for more
-- performance - vector style apl vs record style c
-    - small expressions
-    - calculator

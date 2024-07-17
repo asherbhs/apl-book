@@ -131,19 +131,19 @@
 		p~⍨⍳≢p
 	}
 
-	DepthToPathMatrix←{d←⍵
+	Roots←{p←⍵
+		I⍣≡⍨p
+	}
+
+	D2M←{d←⍵
 		⌈\⌈⍀(⍳≢d)@(d,¨⍳≢d)⊢(1+⌈/d)(≢d)⍴0
 	}
 
 	⍝ shortest distance between two nodes
 	DistanceMatrix←{d←⍵
-		0⌈(∘.+⍨d)-2×¯1+(⍉+.=⊢) DepthToPathMatrix d
+		0⌈(∘.+⍨d)-2×¯1+(⍉+.=⊢) D2M d
 		⍝ │     │   └────────┴─length of common prefix
 		⍝ └─────┴──────────────distance passing through root
-	}
-
-	Roots←{p←⍵
-		I⍣≡⍨p
 	}
 
 	D2P←{d←⍵
@@ -155,6 +155,30 @@
 		⍝   │   │└────┴────────── most recent node at previous level - the parent
 		⍝   └───┴──────────────── make this the parent
 		p
+	}
+
+	⍝ note: not guaranteed DFPT!!
+	Depth←{p←⍵
+		d←p≠⍳≢p
+		_←{q⊣d+←⍵≠q←p[⍵]}⍣≡p
+		d
+	}
+
+	P2D←{p←⍵
+		z←⍪⍳≢p
+		d←p≠,z
+		_←{
+			z,←⍵
+			q←p[⍵]
+			d+←⍵≠q
+			q
+		}⍣≡p
+		d (⍋(-1+d)⊂⍤↑⍤0 1⊢⌽z)
+	}
+
+	DFPT←{p←⍵
+		d q←P2D p
+		q⍳p[q]
 	}
 
 	_traverse←{p←⍵
@@ -228,13 +252,6 @@
 			0=≢s                         ⍝ stop if we are out of data
 		}⍣⊣⍬
 		p v
-	}
-
-	⍝ note: not guaranteed DFPT!!
-	Depth←{p←⍵
-		d←p≠⍳≢p
-		_←{q⊣d+←⍵≠q←p[⍵]}⍣≡p
-		d
 	}
 
 	Lisp←{p←⍵
@@ -324,7 +341,7 @@
 
 	PP←{⍺←'∘' ⋄ v p←⍺⍵
 		d←Depth p
-		r←(≢p)⍴⍉⍤⍪⍤⍕¨v
+		r←(≢p)⍴⍉⍤⍪⍤⍕¨'∘'@(0=≢¨)v
 		md←⌈/d
 		md=0: r    ⍝ avoid the each running on the prototype
 		_←{
@@ -520,13 +537,13 @@
 			j←⍸⍺⍺∘≡¨t I i
 			0=≢j: ⍬
 			_←{
-				k←i[⍵]            ⍝┐              ∘   
-				p[¯1↓k]←1↓k       ⍝│              │   
-				p[i[⍵+1]]←k       ⍝│     ∘        +   
-				p[i[¯1+⊃⍵]]←⊃k    ⍝┘ ┌─┬─┼─┬─┐ → ┌┴─┐ 
-				⍬                 ⍝  a + b + c   +  c 
-			}¨j⊂⍨1,2≠2-⍨/j        ⍝             ┌┴┐   
-			⍬                     ⍝             a b
+				k←i[⍵]            ⍝─┬─             ∘  
+				p[i[¯1+⊃⍵]]←⊃k    ⍝ │              │  
+				p[i[⍵+1]]←k       ⍝ │     ∘        +  
+				p[¯1↓k]←1↓k       ⍝─┤ ┌─┬─┼─┬─┐ → ┌┴┐ 
+				⍬                 ⍝ │ a + b + c   + c 
+			}¨j⊂⍨1,2≠2-⍨/j        ⍝ │            ┌┴┐  
+			⍬                     ⍝ └─           a b  
 		}
 		ip←⍳≢p
 		_←p('÷'_p⌸)ip
@@ -551,6 +568,75 @@
 			⍬
 		}¨⌽1+⍳⌈/d
 		r[⊃⍸p=⍳≢p]
+	}
+
+	LeafSimilar←{(p1 v1)(p2 v2)←⍺⍵
+		_ i1←P2D p1
+		_ i2←P2D p2
+		l1←v1/⍨⍥(I∘i1)~p1∊⍨⍳≢p1
+		l2←v2/⍨⍥(I∘i2)~p2∊⍨⍳≢p2
+		l1≡l2
+	}
+
+	SameTree←{(p1 v1)(p2 v2)←⍺⍵
+		d1 i1←P2D p1
+		d2 i2←P2D p2
+		(v1[i1]≡v2[i2])∧d1[i1]≡d2[i2]
+	}
+
+	GetJSON←{
+		↑⎕SH'curl ''http://api.open-notify.org/astros.json'' | jq .'
+	}
+
+	⍝ equivalent jq:
+	⍝ .people
+	⍝     | group_by(.craft)
+	⍝     | map({ (.[0].craft): map(.name) })
+	⍝     | reduce .[] as $x ({}; . + $x)
+	Astronauts←{
+		d k v t←↓⍉(⎕JSON⎕OPT'Format' 'M')⍵
+		p←D2P d
+
+		⎕←⍪k v PP¨⊂p
+
+		i←⍸2=t[p[⍳≢p]]          ⍝ nodes in the (only) array
+		p[i]←i                  ⍝ lift them out of the tree
+
+		⎕←⍪k v PP¨⊂p
+
+		⍝ create craft groups
+		j←⍸'craft'∘≡¨k          ⍝ craft nodes
+		c←∪v[j]                 ⍝ crafts
+		r←≢p                    ⍝ new root node to parent the group arrays
+		g←r+1+⍳≢c               ⍝ nodes for craft group array
+		p,←(1+≢c)⍴r             ⍝ connect parents - all point to root
+		k,←(⊂''),c              ⍝ groups are keyed by their craft name
+		v,←(1+≢c)⍴⊂⍬            ⍝ values empty for now
+		t,←1,(≢c)⍴2             ⍝ root is an object (1), groups are arrays (2)
+
+		⎕←⍪k v PP¨⊂p
+
+		⍝ group names
+		p[j+1]←g[c⍳v[j]]        ⍝ connect names to groups
+		k[j+1]←⊂''              ⍝ array elements must not have a key for ⎕JSON
+
+		⎕←⍪k v PP¨⊂p
+
+		⍝ collect garbage
+		m←r=p I@(r∘≠)⍣≡⍳≢p      ⍝ mask of nodes which descend from the new root
+		p←(⍸~m)(⊢-1+⍸)m/p       ⍝ delete all others
+		k v t/⍨←⊂m              ⍝ ↑
+
+		⎕←⍪k v PP¨⊂p
+
+		⍝ put into DFPT order
+		d q←P2D p
+		d←d[q]
+		k←k[q]
+		v←v[q]
+		t←t[q]
+
+		⎕JSON⎕OPT('Format' 'M')('Compact' 0)⍉↑d k v t
 	}
 
 :EndNamespace
