@@ -4,7 +4,6 @@
 	⍝ ⌷⍨∘⊂⍨ (select) uses opposite argument order
 	I←{(⊂⍵)⌷⍺}    ⍝ approximately {⍵[⍺]}
 
-	⍝ 
 	CaLa←{
 		⍺≠⍥(≢⍤⍴)⍵: ⍺⍪⍵
 		⍺,[⎕IO-.5]⍵
@@ -256,7 +255,7 @@
 
 	Lisp←{p←⍵
 		d←Depth p
-		r←,¨⍳≢p                        ⍝ seeded value
+		r←,¨⍳≢p    ⍝ seeded value
 
 		_←{p[i]{(⍺⊃r),←⍵}⌸r[i←⍸d=⍵]}¨⌽1+⍳⌈/d
 		⍝  │  │ │      │  │ │    │  └──────┴ for each non-root layer, starting from the bottom
@@ -269,7 +268,7 @@
 		⍝ ⍝  │         │  └────┴────────── nodes at this depth
 		⍝ ⍝  └─────────┴────────────────── append lispification to result of parent
 
-		r/⍨p=⍳≢p                       ⍝ return values at roots only
+		r/⍨p=⍳≢p    ⍝ return values at roots only
 
 		⍝ if you're so inclined
 	⍝	(p=⍳≢p)/⊃{l@(⊃¨l)⊢⍵⊣l←p[i](,/,∘(⊂¨)⍥(⍵∘I))⌸i←⍸d=⍺}/(1+⍳⌈/d),⊂,¨⍳≢p
@@ -339,39 +338,49 @@
 		gv
 	}
 
-	PP←{⍺←'∘' ⋄ v p←⍺⍵
+	⍝ renders a tree given labels, box drawing characters, and padding
+	⍝     ┌─────── vector of character matrices giving the labels for each node
+	⍝     │ ┌───── box drawing characters to render the tree, e.g: '─┌┬┐│┴├┼┤│'
+	⍝     │ │                                               normal ─┴───┘└───┴─ upstruck
+	⍝     │ │ ┌─── number of spaces to pad with between sub-tree
+	⍝     │ │ │ ┌─ parent vector
+	_pp_←{v b s p←⍺ ⍺⍺ ⍵⍵ ⍵
 		d←Depth p
-		r←(≢p)⍴⍉⍤⍪⍤⍕¨'∘'@(0=≢¨)v
 		md←⌈/d
+		r←v        ⍝ result of rendering each sub-tree, seeded with labels
 		md=0: r    ⍝ avoid the each running on the prototype
 		_←{
-			i←⍸d=⍵
-			_←p[i]{
-				ws←(1⊃⍴)¨⍵
-				w←¯1++/1+ws
-				cs←(+\0,¯1↓1+ws)+¯1+⌈2÷⍨ws
-				b←w⍴' '
-				b[(⊢⊢⍤/⍨((⊃⌽cs)>⊢)∧(⊃cs)<⊢)⍳w]←'─'
-				b[   ⊃ cs]←'┌'
-				b[   ⊃⌽cs]←'┐'
-				b[¯1↓1↓cs]←'┬'
-				b[(1=≢cs)⍴⊃cs]←'│'
-				c←¯1+⌈2÷⍨w
-				b[c]←'┴├┼┤│'['─┌┬┐│'⍳b[c]]
-				t←b⍪¯1↓⍤1⊃,/,∘' '¨((⌈/≢¨)↑¨⊢)⍵
-				rp←⍺⊃r
-				ww←1⊃⍴rp
-				cc←¯1+⌈2÷⍨ww
-				t ←((c-cc)⌽ww↑⍤1⊢)⍣(w<ww)⊢t
-				rp←((cc-c)⌽ w↑⍤1⊢)⍣(w>ww)⊢rp
-				t⍪⍨←rp
-				r[⍺]←⊂t
+			i←⍸d=⍵    ⍝ nodes at this depth
+			F←{                                          ⍝ ⍺ parent, ⍵ rendered child sub-trees
+				ws←(1⊃⍴)¨⍵                               ⍝ widths of each rendered child
+				w←s-⍨+/s+ws                              ⍝ eventual width of the rendered tree       wwwwwww
+				cs←(+\0,¯1↓s+ws)+¯1+⌈2÷⍨ws               ⍝ centres of each rendered sub-tree         ∘ss∘ss∘
+				t←w⍴' '                                  ⍝ header to be decorated                   '       '
+				t[(⊢⊢⍤/⍨((⊃⌽cs)>⊢)∧(⊃cs)<⊢)⍳w]←b[0]      ⍝ add horizontal bar                       ' ───── '
+				t[   ⊃ cs]←b[1]                          ⍝ left end of bar                          '┌───── '
+				t[   ⊃⌽cs]←b[3]                          ⍝ right end of bar                         '┌─────┐'
+				t[¯1↓1↓cs]←b[2]                          ⍝ connectors to intermediate children      '┌──┬──┐'
+				t[(1=≢cs)⍴⊃cs]←b[4]                      ⍝ if there's only one child, just make it a lone upstrike
+				c←¯1+⌈2÷⍨w                               ⍝ index of the centre of the rendered tree     ∘
+				t[c]←b[5 6 7 8 9][b[0 1 2 3 4]⍳t[c]]     ⍝ connector to the parent                  '┌──┼──┐'
+				t⍪←(-s)↓⍤1⊃,/,∘(s⍴' ')⍤1¨((⌈/≢¨)↑¨⊢)⍵    ⍝ pad lables, join under header
+				rp←⍺⊃r                                   ⍝ label of the parent
+				ww←1⊃⍴rp                                 ⍝ width of label of parent
+				cc←¯1+⌈2÷⍨ww                             ⍝ centre of label of parent
+				t ←((c-cc)⌽ww↑⍤1⊢)⍣(w<ww)⊢t              ⍝ pad and recentre text so far if it's less wide
+				rp←((cc-c)⌽ w↑⍤1⊢)⍣(w>ww)⊢rp             ⍝ pad and recentre parent label if it's less wide
+				t⍪⍨←rp                                   ⍝ add parent label
+				r[⍺]←⊂t                                  ⍝ record result
 				⍬
-			}⌸r[i]
+			}
+			_←p[i]F⌸r[i]
 			⍬
-		}¨⌽1+⍳md
-		r/⍨p=⍳≢p
+		}¨⌽1+⍳md    ⍝ bottom up accumulation
+		r/⍨p=⍳≢p    ⍝ return results at roots only
 	}
+
+	PPV←{⍺←'∘' ⋄ v p←⍺⍵ ⋄   ((≢p)⍴⍉⍤⍪⍤⍕¨'∘'@(0=≢¨)v)('─┌┬┐│┴├┼┤│'_pp_ 1)p}    ⍝ vertical
+	PPH←{⍺←'∘' ⋄ v p←⍺⍵ ⋄ ⍉¨((≢p)⍴  ⍪⍤⍕¨'∘'@(0=≢¨)v)('│┌├└─┤┬┼┴─'_pp_ 0)p}    ⍝ horizontal
 
 	Collatz←{d←⍵
 		p←0 0 1 2
@@ -441,10 +450,6 @@
 
 	CountChildren←{p←⍵
 		(⍳≢p)((+/∘.=)-=)p
-	}
-
-	Dbg←{p t←⍵
-		('(',¨')',⍨¨(⍕¨⍳≢t),¨N∆[t]) PP p
 	}
 
 	FlattenExpression←{p t k n r←⍵
@@ -534,7 +539,7 @@
 		p←D2P d
 		_p←{
 			i←⍵~⍺
-			j←⍸⍺⍺∘≡¨t I i
+			j←⍸⍺⍺∘≡¨t[i]
 			0=≢j: ⍬
 			_←{
 				k←i[⍵]            ⍝─┬─             ∘  
@@ -589,48 +594,36 @@
 	}
 
 	⍝ equivalent jq:
-	⍝ .people
-	⍝     | group_by(.craft)
-	⍝     | map({ (.[0].craft): map(.name) })
-	⍝     | reduce .[] as $x ({}; . + $x)
+	⍝ .people | group_by(.craft) | map({ (.[0].craft): map(.name) }) | reduce .[] as $x ({}; . + $x)
 	Astronauts←{
 		d k v t←↓⍉(⎕JSON⎕OPT'Format' 'M')⍵
 		p←D2P d
 
-		⎕←⍪k v PP¨⊂p
-
 		i←⍸2=t[p[⍳≢p]]          ⍝ nodes in the (only) array
 		p[i]←i                  ⍝ lift them out of the tree
-
-		⎕←⍪k v PP¨⊂p
 
 		⍝ create craft groups
 		j←⍸'craft'∘≡¨k          ⍝ craft nodes
 		c←∪v[j]                 ⍝ crafts
 		r←≢p                    ⍝ new root node to parent the group arrays
-		g←r+1+⍳≢c               ⍝ nodes for craft group array
+		g←r+1+⍳≢c               ⍝ nodes for craft group arrays
 		p,←(1+≢c)⍴r             ⍝ connect parents - all point to root
 		k,←(⊂''),c              ⍝ groups are keyed by their craft name
 		v,←(1+≢c)⍴⊂⍬            ⍝ values empty for now
 		t,←1,(≢c)⍴2             ⍝ root is an object (1), groups are arrays (2)
 
-		⎕←⍪k v PP¨⊂p
-
 		⍝ group names
 		p[j+1]←g[c⍳v[j]]        ⍝ connect names to groups
 		k[j+1]←⊂''              ⍝ array elements must not have a key for ⎕JSON
 
-		⎕←⍪k v PP¨⊂p
-
 		⍝ collect garbage
 		m←r=p I@(r∘≠)⍣≡⍳≢p      ⍝ mask of nodes which descend from the new root
 		p←(⍸~m)(⊢-1+⍸)m/p       ⍝ delete all others
-		k v t/⍨←⊂m              ⍝ ↑
-
-		⎕←⍪k v PP¨⊂p
+		k v t/⍨←⊂m
 
 		⍝ put into DFPT order
 		d q←P2D p
+		⍝ q⍳p[q]
 		d←d[q]
 		k←k[q]
 		v←v[q]
