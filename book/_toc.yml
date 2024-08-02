@@ -4,6 +4,19 @@
 format: jb-book
 root: intro
 parts:
+  - caption: Trees
+    chapters:
+    - file: trees/intro
+    - file: trees/representing-trees
+    - file: trees/parent-vectors
+    - file: trees/relating-depth-and-parent-vectors
+    - file: trees/forests
+    - file: trees/deleting-nodes
+    - file: trees/bottom-up-aggregation
+    - file: trees/top-down-construction
+    - file: trees/working-with-json
+    - file: trees/parsing
+    - file: trees/translations
   - caption: Combinatorics
     chapters:
     - file: combinatorics/enumerative
@@ -15,9 +28,6 @@ parts:
       - file: combinatorics/integer-partitions
     - file: combinatorics/twelvefold
     - file: combinatorics/catalan
-  - caption: Trees
-    chapters:
-    - file: trees/trees
   - caption: Graphs
     chapters:
     - file: graphs/graphs

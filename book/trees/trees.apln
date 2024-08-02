@@ -151,7 +151,7 @@
 		_←2{p[⍵]←⍺[⍺⍸⍵]}/⊂⍤⊢⌸d
 		⍝ │ │   ││    │ │└───┴─── indices of each level
 		⍝ └─│───││────│─┴──────── pairwise between levels
-		⍝   │   │└────┴────────── most recent node at previous level - the parent
+		⍝   │   │└────┴────────── leftmost node at previous level - the parent
 		⍝   └───┴──────────────── make this the parent
 		p
 	}
@@ -207,6 +207,10 @@
 
 	Deforest←{p←⍵
 		(I⍣≡⍨{⊂⍵-⍵I⍨+\~p∊⍵}⌸⊢)p
+	}
+
+	Deforest2←{p←⍵
+		(I⍣≡⍨{⊂⍵-1+⍵⍸⍨⍸~p∊⍵}⌸⊢)p
 	}
 
 	Snip←{i p←⍺⍵
@@ -516,6 +520,12 @@
 	⍝	     └┴────────────────── correct parent - it is now that many indices farther back
 	}
 
+	Delete2←{x p←⍺⍵
+		m←x∊⍨p I@{~⍵∊x}⍣≡⍳≢p
+		q←(~m)/p
+		q-(+\m)[q]
+	}
+
 	Sc←{ ⍝ +\ on contiguous nonzero segments
 		sc←+\⍵
 		(⍵≠0)×sc-⌈\(sc-⍵)×2</0,⍵    ⍝ should be (+×0≠⊢)\⍵ but scan is actually reduction on prefixes
@@ -631,5 +641,45 @@
 
 		⎕JSON⎕OPT('Format' 'M')('Compact' 0)⍉↑d k v t
 	}
+
+	Random←{
+		⍺←2    ⍝ integer ≥ 1    higher → fewer, taller trees
+		r←⍺
+		d←⍳⍵
+		_←{d[⍵]←⌈/?r⍴d[⍵-1]+2}¨1↓d
+		p←D2P d
+		q←?⍨≢p
+		q⍳p[q]
+	}
+
+	∇ Bench
+		'cmpx' 'time'⎕CY'dfns'
+
+		deforestScan←'(I⍣≡⍨{⊂⍵-(+\~p∊⍵)[⍵]}⌸⊢)p'
+		deforestInterval←'(I⍣≡⍨{⊂⍵-1+⍵⍸⍨⍸~p∊⍵}⌸⊢)p'
+		:For args :In ⍉1 2 3 4 5∘.,10*2 3 4 5
+			:For _ :In ⍳5
+				args
+				p←⊃Random/args
+				⍝ deforestScan≡⍥⍎deforestInterval
+				⍝ cmpx deforestScan deforestInterval
+				⍎time deforestScan
+				⍎time deforestInterval
+			:EndFor
+		:EndFor
+
+		⍝ deleteScan←'(⊢-(+\m)⌷⍨⊂)(~m)/p'
+		⍝ deleteInterval←'(⍸m)(⊢-1+⍸)(~m)/p'
+		⍝ :For args :In ⍉1 2 3 4 5∘.,10*2 3 4 5
+		⍝ 	:For _ :In ⍳5
+		⍝ 		args
+		⍝ 		p←⊃Random/args
+		⍝ 		i←?≢p
+		⍝ 		m←i=p I@{⍵≠i}⍣≡⍳≢p
+		⍝ 		⍝ deleteScan≡⍥⍎deleteInterval
+		⍝ 		cmpx deleteScan deleteInterval
+		⍝ 	:EndFor
+		⍝ :EndFor
+	∇
 
 :EndNamespace

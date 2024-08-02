@@ -106,7 +106,7 @@ The `data` vector is indexed by the same indices as the `depths` vector, so that
 ↑(⊂¨'index:' 'depths:' 'data:'),¨(⍳≢depths) depths data
 ```
 
-At this point it's helpful to make a small mental shift. We are drawing a one-to-one correspondence between node and indices into these vectors, using the indices as unique identifiers. We will use this so frequently that making the distinction explit becomes tiring, so from now on, we will often refer to 'the node associated with index `i`' simply as 'node `i`'.
+At this point it's helpful to make a small mental shift. We are drawing a one-to-one correspondence between node and indices into these vectors, using the indices as unique identifiers. We will use this so frequently that making the distinction explicit becomes tiring, so from now on, we will often refer to 'the node associated with index `i`' simply as 'node `i`'.
 
 Labelling each node of our tree with its corresponding index reveals an interesting pattern.
 
@@ -126,19 +126,25 @@ The depth-first, pre-order traversal in action.
 
 So the depth vector representation orders nodes exactly in a DFPT ordering. This presents a problem for manipulating trees in this format, as we are required to maintain this ordering exactly whenever we change the structure of the tree, which can be fairly inconvenient and costly. Especially, we would like to be able to append data to the end of the depth vector when adding nodes, as this is implemented more efficiently in the Dyalog interpreter than splicing into the middle of the vector, but the ordering requirements forbid us from doing this in most cases.
 
-Additionally, we often want to find parents or siblings of a node for various reasons. Given the index `i` of a node, we know that the node and its siblings are at depth `depth[i]`, and it parent is at depth `depth[i]-1`. If we find the rightmost `j` less than `i` such that `depth[j]=depth[i]-1`, then `j` must be the parent of `i`. Then, the leftmost `k` after `i` with `depth[k]≤depth[j]` will indicate the first node after `i` which is not a descendant of `j`. All nodes between `j` and `k` with a depth of `depth[i]` will therefore be siblings of `i`.
+Additionally, we often want to find parents or siblings of a node for various reasons. In the depth vector, sub-trees are stored contiguously.
+
+```{figure} media/IntroTreeFlatten_ManimCE_v0.18.1.gif
+:alt: An animation of the tree with depth labels flattening into the depth vector. A sub-tree is highlighted.
+
+The location of a sub-tree in the depth vector.
+```
+
+This structure means that, given a node `i`, finding the parent and siblings of `i` requires linearly scanning through the depth vector forwards and backwards from `i` to find places with the correct depth, which can become extremely costly on large vectors when sub-trees take up lots of space.
 
 ```
                siblings of i
                    ┌─┴─┐
 depth: 0 1 2 2 1 2 3 3 3 1
                  ↑   ↑   ↑
-                 j   i   k
+    parent of i ─┘   i   └─ start of next sub-tree
 ```
 
-Unfortunately, finding `j` and `k` requires stepping through the vector one element at a time, or a combination of masking operations over the whole vector. As well as being cumbersome, for large trees this becomes computationally very expensive.
-
-The depth vector representation is therefore useful in some situations, indeed we'll find it useful in the sections on [working with ⎕JSON](working-with-json.md) and [parsing](parsing.md). But it is not the representation that we would like to settle on for most of our operations.
+The depth vector representation is therefore only useful in some situations. Indeed, we’ll find it very handy in the sections on [working with ⎕JSON](https://asherbhs.github.io/apl-book/trees/working-with-json.html) and [parsing](https://asherbhs.github.io/apl-book/trees/parsing.html), but it is not the representation that we would like to settle on for most of our operations.
 
 ## The Path Matrix Representation
 
@@ -204,8 +210,12 @@ parent: 0 0 1 1 0 4 5 5 5 0
 
 Following these pointers from any starting node will trace out the path to that node from the root, as found in the path matrix.
 
-Notice that node $0$, as the root, has no parent. We could use some kind of sentinal value like $-1$ to indicate that a node has no parent, but for reasons which will become clear as we work with this representation more, we instead have the root $0$ point to itself.
+Notice that node $0$, as the root, has no parent. We could use some kind of sentinal value like $-1$ to indicate that a node has no parent, but for reasons which will become clear as we work with this representation more, we instead have the root, node $0$, point to itself.
 
-Like the depth vector, the parent vector is extremely space efficient, and like the path matrix, it is not heavily constrained by ordering requirements. The nodes can be shuffled arbitrarily, so long as we update the parents in each place to reflect the suffling.
+Like the depth vector, the parent vector is extremely space efficient. Like the path matrix, it is not heavily constrained by ordering requirements. The nodes can be shuffled arbitrarily, so long as we update the parents in each place to reflect the suffling.
 
 This representation is suitable for most of our purposes, and it is the one we will focus on for the rest of the tutorial.
+
+## Challenge
+
+**Challenge:** To make sure you really understand each of these representations, draw yourself a small tree on paper, and then write out the depth vector, path matrix, and parent vector for that tree. As you figure these out, you will get an idea of what the APL interpreter is spending its time doing when working with these representations.

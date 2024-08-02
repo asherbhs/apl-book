@@ -7,10 +7,10 @@
         - [ ] distances between nodes?
         - [x] oh no it's O(nd)
     - [x] parent vector
-    - [ ] challenge:
+    - [x] challenge:
         - on paper, draw a simple tree and write down the nested representation, depth vector, path matrix, and parent vector for the tree
         - use an interpreter to check your answers
-- [ ] parent vector representation
+- [x] parent vector representation
     - [x] this is super great
     - [x] basic operations
         - [x] find children:    `⍸p∊i`
@@ -23,15 +23,17 @@
         - [x] don't need to maintain dfpt order
         - [x] need to maintain sibling order if it matters for your operation
         - [x] invert
-- [ ] relationship to depth vector
-    - [ ] construction from depth vector
-    - [ ] finding depths
-    - [ ] imposing dfpt order
-- [ ] forests
-    - [ ] join multiple into a forest
-    - [ ] split multiple into individual (deforest)
-    - [ ] exercise: join all trees in a forest under 1 root: `{0,(⍵≠⍳≢⍵)×1+⍵}`
-- [ ] deletion
+- [x] relationship to depth vector
+    - [x] construction from depth vector
+    - [x] finding depths
+    - [x] imposing dfpt order
+- [x] forests
+    - [x] join multiple into a forest
+        - join adjacently
+        - just concatenate extra data
+    - [x] split multiple into individual (deforest)
+    - [x] exercise: join all trees in a forest under 1 root: `{0,(⍵≠⍳≢⍵)×1+⍵}`
+- [x] deletion
 - [ ] bottom-up acculumation
     - [ ] Lisp
         - using key
@@ -53,7 +55,8 @@
     - mention that ⎕xml uses a similar format
 - [ ] small calculator as a larger example
     - point to co-dfns for more
+- [ ] translations
 - [ ] leetcode problems
-    - [ ] [invert](https://leetcode.com/problems/invert-binary-tree/)
+    - [x] [invert](https://leetcode.com/problems/invert-binary-tree/)
     - [ ] [height balanced](https://leetcode.com/problems/balanced-binary-tree/)
     - [ ] [leaf similar](https://leetcode.com/problems/leaf-similar-trees/)

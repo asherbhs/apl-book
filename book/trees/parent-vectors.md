@@ -22,7 +22,7 @@ I←{⍺[⍵]}
 
 # Parent Vectors
 
-At the end of the previous section we settled on the parent vector representation as the main representation of trees we will be using in this tutorial. To reiterate, to represent a tree on $n$ nodes, we associate each node with an index in `⍳n`, and create an $n$-element vector `parent` such that if a node `i` is a child of a node `j`, then `parent[i]=j`.
+At the end of the previous section we settled on the parent vector representation as the main representation of trees we will be using in this tutorial. To reiterate, to represent a tree of $n$ nodes, we associate each node with an index in `⍳n`, and create an $n$-element vector `parent` such that if a node `i` is a child of a node `j`, then `parent[i]=j`.
 
 We're going to use a slightly larger tree for the examples in this section:
 
@@ -70,7 +70,7 @@ If we have multiple nodes which we want to find the children of, we can simply m
 
 ```{code-cell}
 i←1 6
-p∊i    ⍝ additionally, nodes 7 is a child of node 6
+p∊i    ⍝ additionally, node 7 is a child of node 6
 ```
 
 Applying `⍸` gives us the nodes which this mask selects.
@@ -200,6 +200,7 @@ Since there is only one tree in this vector, all nodes have the same root - $0$.
 
 ```{code-cell}
 p I⍣≡p
+I⍣≡⍨p     ⍝ cute but a little less clear
 ```
 
 Let's say we want to find all the nodes which are a descendant of node $6$. We can use the same process as in the above code, and use the `@` operator to prevent the indexing from going above node $6$ each time:
@@ -230,15 +231,86 @@ This can be easily extended to work with multiple nodes as roots, for example if
 ⍝ └───┴──────────── find those which hit 1 or 6
 ```
 
+### Shuffling Nodes
+
+On the [previous page](representing-trees.md), we used a little trick to properly correct the parent references in a path matrix after permuting the nodes. We're going to use the same trick to permute parent vectors, and we're going to actually show how it works.
+
+There are several reasons we may want to shuffle order of a parent vector. For instance, on the next page we're going to take an arbitrarily ordered parent vector and impose the DFPT ordering on it.
+
+Importantly, when we shuffle a parent vector and correct the indices, the tree we're representing doesn't change at all. We take careful effort to make sure that when we're finished, our new parent vector represents the same tree.
+
+Say we have some arbitrary permutation vector which we want to use to shuffle the nodes of our tree.
+
+```{code-cell}
+perm←8 3 10 11 7 6 5 4 9 2 0 1
+```
+
+We want to use this permutation vector to shuffle the parent vector, while maintaining the structure of the tree. If we just permute the parent vector without any kind of correction, the structure of the tree is messed up.
+
+```{code-cell}
+p[perm]
+```
+
+```{figure} media/PVPermute_ManimCE_v0.18.1.gif
+:alt: The edges in the tree shuffling after our incomplete permutation of the parent vector.
+
+The result of shuffling the parent vector.
+```
+
+To fix this tangle of branches, we need to find where each parent was sent by the permutation, and correct the parent vector accordingly.
+
+Take the node $4$. This node's parent was originally at index $2$.
+
+```{code-cell}
+p[4]
+```
+
+After shuffling, this node still has index $2$ recorded as its parent, even though the node has moved from index $2$ to elsewhere.
+
+```{code-cell}
+perm⍳4        ⍝ the node at index 4 is sent to index 7
+p[perm][7]    ⍝ the parent of the node is still set (incorrectly) to 2
+```
+
+The new index of the node's parent will be where the node at index $2$ is sent by the permutation.
+
+```{code-cell}
+perm⍳2
+```
+
+So $9$ is the corrected index of the parent of the node formerly at index $4$, now at index $7$.
+
+If we apply this method to each parent in the permuted parent vector, not just the parent recorded at index $7$, we correct the whole vector.
+
+```{code-cell}
+⊢p←perm⍳p[perm]
+```
+
+```{figure} media/PVPermuteFix_ManimCE_v0.18.1.gif
+:alt: The edges in the tree shuffling back to normal.
+
+Fixing the parent pointers.
+```
+
+The result of this is a shuffled parent vector, with parent pointers set so as to represent exactly the same tree we started with.
+
 ## Favourite Children (Ordering Siblings)
 
-Before we go any further, it's work making a note of the ordering requirements for a parent vector. We know that one of the big advantages of the representation is that it's not constrained by the DFPT order, you can place parents and children in any order you like so long as each node points to its correct parent.
+Before we go any further, it's worth making a note of the ordering requirements for a parent vector. We know that one of the big advantages of the representation is that it's not constrained by the DFPT order, you can place parents and children in any order you like so long as each node points to its correct parent.
 
 Sometimes, the order of siblings in a tree matters. Without any extra information, the only way to store the order of siblings in a tree is by their order in the parent vector. Throughout this tutorial, we're going to use operations which maintain sibling ordering in the vast majority of cases, and we'll be explicit where we don't. The good news is, if your use of trees doesn't require maintaining the order of siblings, you don't have to worry about this at all!
 
 ### Inverting
 
-Because it doesn't really fit anywhere else in the tutorial, let's look at a neat way to reverse the order of all siblings in a tree - in other words, mirroring the tree. On our example tree, this looks like:
+Because it doesn't really fit anywhere else in the tutorial, let's look at a neat way to reverse the order of all siblings in a tree - in other words, mirroring the tree.
+
+We will again reset our tree.
+
+```{code-cell}
+⊢p←parent
+```
+
+On our example tree, inverting looks like this:
 
 ```{figure} media/PVInvert_ManimCE_v0.18.1.gif
 :alt: The tree moving to mirror itself horizontally.
@@ -246,7 +318,7 @@ Because it doesn't really fit anywhere else in the tutorial, let's look at a nea
 Mirroring the tree.
 ```
 
-Our first step is to simply reverse the parent vector.
+Our first step is to invert the parent vector is simply reverse it.
 
 ```{code-cell}
 ⌽p
@@ -318,7 +390,7 @@ PPH←{⍺←'∘' ⋄ v p←⍺⍵ ⋄ ⍉¨((≢p)⍴  ⍪⍤⍕¨'∘'@(0=≢
 
 (You may also find [this essay](https://code.jsoftware.com/wiki/Essays/Tree_Display) by Roger Hui interesting.)
 
-We now have access to the `PPV` and `PPH` functions to visualise trees vertically and horizontally respectively. These functions take a parent vector as their right argument, and optionally a scalar label or vector of labels as their left argument. The left argument is reshaped to the length of the given parent vector, and matched up so that node $0$ used label $0$, node $1$ uses label $1$, and so on.
+We now have access to the `PPV` and `PPH` functions to visualise trees both vertically and horizontally. These functions take a parent vector as their right argument, and optionally a scalar label or vector of labels as their left argument. The left argument is reshaped to the length of the given parent vector, and matched up so that node $0$ used label $0$, node $1$ uses label $1$, and so on.
 
 ```{code-cell}
 PPV p    ⍝ visualise vertically
@@ -360,7 +432,7 @@ Note that the output of PPV is a vector of character matrices, one for each tree
 
 ```{code-cell}
 ⍝ finding roots
-(p I⍣≡p) PPV p
+(I⍣≡⍨p) PPV p
 ```
 
 ```{code-cell}
